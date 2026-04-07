@@ -96,7 +96,7 @@ export async function POST(req: NextRequest) {
       resend.emails.send({
         from:    "DyanAI Labs <contact@dyanailabs.com>",
         to:      email,
-        replyTo: ownerEmail,
+        reply_to: ownerEmail,
         subject: `Your consultation is confirmed — ${displayDate} at ${displayTime}`,
         html: `<div style="${sharedStyles}">
           <h2 style="color:${accent};margin-top:0">You're confirmed, ${name}!</h2>
