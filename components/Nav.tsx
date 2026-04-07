@@ -84,26 +84,26 @@ export default function Nav() {
 
       {/* Mobile menu */}
       {menuOpen && (
-        <div className="md:hidden bg-navy-900/98 border-t border-navy-700 px-6 py-4 flex flex-col gap-4">
+        <div className="md:hidden absolute top-full left-0 right-0 bg-[#070d1f]/95 backdrop-blur-md border-t border-b border-white/10 shadow-[0_8px_32px_rgba(0,0,0,0.6)] px-6 py-5 flex flex-col gap-1">
           {links.map((l) => (
             <a
               key={l.href}
               href={l.href}
               onClick={() => setMenuOpen(false)}
-              className="text-gray-300 hover:text-white transition-colors"
+              className="text-gray-300 hover:text-white transition-colors py-2 border-b border-white/5 last:border-0"
             >
               {l.label}
             </a>
           ))}
           <button
             onClick={() => { setAboutOpen(true); setMenuOpen(false); }}
-            className="text-gray-300 hover:text-white transition-colors text-left"
+            className="text-gray-300 hover:text-white transition-colors text-left py-2 border-b border-white/5"
           >
             About
           </button>
           <button
             onClick={() => { setBookingOpen(true); setMenuOpen(false); }}
-            className="text-sm bg-green-600 hover:bg-green-500 text-white px-4 py-2 rounded-lg transition-colors font-medium text-center"
+            className="mt-2 text-sm bg-green-600 hover:bg-green-500 text-white px-4 py-2.5 rounded-lg transition-colors font-medium text-center"
           >
             Book a Call
           </button>
