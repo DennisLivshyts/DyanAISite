@@ -2,11 +2,13 @@
 
 import { useState, useEffect } from "react";
 import AboutModal from "./AboutModal";
+import BookingModal from "./BookingModal";
 
 export default function Nav() {
   const [scrolled, setScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [aboutOpen, setAboutOpen] = useState(false);
+  const [bookingOpen, setBookingOpen] = useState(false);
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 20);
@@ -56,14 +58,12 @@ export default function Nav() {
           >
             About
           </button>
-          <a
-            href="https://calendly.com/livshytsd-dyanailabs"
-            target="_blank"
-            rel="noopener noreferrer"
+          <button
+            onClick={() => setBookingOpen(true)}
             className="text-sm bg-green-600 hover:bg-green-500 text-white px-4 py-2 rounded-lg transition-colors font-medium"
           >
             Book a Call
-          </a>
+          </button>
         </div>
 
         {/* Mobile hamburger */}
@@ -101,18 +101,17 @@ export default function Nav() {
           >
             About
           </button>
-          <a
-            href="https://calendly.com/livshytsd-dyanailabs"
-            target="_blank"
-            rel="noopener noreferrer"
+          <button
+            onClick={() => { setBookingOpen(true); setMenuOpen(false); }}
             className="text-sm bg-green-600 hover:bg-green-500 text-white px-4 py-2 rounded-lg transition-colors font-medium text-center"
           >
             Book a Call
-          </a>
+          </button>
         </div>
       )}
 
       <AboutModal isOpen={aboutOpen} onClose={() => setAboutOpen(false)} />
+      <BookingModal isOpen={bookingOpen} onClose={() => setBookingOpen(false)} />
     </header>
   );
 }

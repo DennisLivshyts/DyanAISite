@@ -1,18 +1,7 @@
 "use client";
 
 import { useState } from "react";
-
-declare global {
-  interface Window {
-    Calendly?: {
-      initPopupWidget: (opts: { url: string }) => void;
-    };
-  }
-}
-
-function openCalendly() {
-  window.Calendly?.initPopupWidget({ url: "https://calendly.com/livshytsd-dyanailabs" });
-}
+import BookingModal from "./BookingModal";
 
 function FloatLabel({ label, children }: { label: string; children: React.ReactNode }) {
   return (
@@ -28,6 +17,7 @@ function FloatLabel({ label, children }: { label: string; children: React.ReactN
 export default function Contact() {
   const [form, setForm] = useState({ name: "", email: "", business: "", message: "" });
   const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
+  const [bookingOpen, setBookingOpen] = useState(false);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
@@ -87,7 +77,7 @@ export default function Contact() {
 
             {/* Featured book-a-call card */}
             <button
-              onClick={openCalendly}
+              onClick={() => setBookingOpen(true)}
               className="group relative w-full flex-1 text-left rounded-2xl overflow-hidden transition-all duration-300 hover:scale-[1.015] active:scale-[0.99]"
             >
               {/* Animated gradient border */}
@@ -267,6 +257,8 @@ export default function Contact() {
           )}
         </div>
       </div>
+
+      <BookingModal isOpen={bookingOpen} onClose={() => setBookingOpen(false)} />
     </section>
   );
 }

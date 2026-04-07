@@ -1,4 +1,11 @@
+"use client";
+
+import { useState } from "react";
+import BookingModal from "./BookingModal";
+
 export default function Hero() {
+  const [bookingOpen, setBookingOpen] = useState(false);
+
   return (
     <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
       {/* Background grid */}
@@ -44,14 +51,12 @@ export default function Hero() {
 
         {/* CTAs */}
         <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-          <a
-            href="https://calendly.com/livshytsd-dyanailabs"
-            target="_blank"
-            rel="noopener noreferrer"
+          <button
+            onClick={() => setBookingOpen(true)}
             className="w-full sm:w-auto bg-green-600 hover:bg-green-500 text-white font-semibold px-8 py-4 rounded-xl transition-all duration-200 hover:shadow-lg hover:shadow-green-600/20"
           >
             Book a Free Consultation
-          </a>
+          </button>
           <a
             href="#services"
             className="w-full sm:w-auto border border-navy-700 hover:border-green-600/50 text-gray-300 hover:text-white font-medium px-8 py-4 rounded-xl transition-all duration-200"
@@ -73,6 +78,8 @@ export default function Hero() {
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
         </svg>
       </div>
+
+      <BookingModal isOpen={bookingOpen} onClose={() => setBookingOpen(false)} />
     </section>
   );
 }

@@ -144,15 +144,16 @@ export default function SpaceBackground() {
       {/* ── Shooting stars ── */}
       {shootingStars.map((s) => (
         <div key={s.id}
-          className="animate-shoot absolute rounded-full"
+          className="animate-shoot absolute"
           style={{
-            top:   `${s.top}vh`,
-            right: `${s.right}vw`,
-            height: "1px",
-            background: "linear-gradient(90deg, rgba(255,255,255,0.95), rgba(180,240,230,0.6), transparent)",
-            transform: `rotate(${s.angle}deg)`,
-            transformOrigin: "right center",
-            boxShadow: "0 0 4px rgba(255,255,255,0.6)",
+            top:    `${s.top}vh`,
+            right:  `${s.right}vw`,   // negative value pushes it off-screen right
+            height: "1.5px",
+            borderRadius: "1px",
+            /* head (left) bright white → teal glow → transparent tail (right) */
+            background: "linear-gradient(to right, rgba(255,255,255,0.95) 0%, rgba(180,240,225,0.7) 30%, rgba(120,210,200,0.3) 65%, transparent 100%)",
+            boxShadow: "0 0 5px 1px rgba(200,255,240,0.35)",
+            transformOrigin: "center center",
           }} />
       ))}
 
