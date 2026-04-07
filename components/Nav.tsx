@@ -1,10 +1,12 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import AboutModal from "./AboutModal";
 
 export default function Nav() {
   const [scrolled, setScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
+  const [aboutOpen, setAboutOpen] = useState(false);
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 20);
@@ -48,8 +50,14 @@ export default function Nav() {
               {l.label}
             </a>
           ))}
+          <button
+            onClick={() => setAboutOpen(true)}
+            className="text-sm text-gray-300 hover:text-white transition-colors"
+          >
+            About
+          </button>
           <a
-            href="https://calendly.com/dyanailabs"
+            href="https://calendly.com/livshytsd-dyanailabs"
             target="_blank"
             rel="noopener noreferrer"
             className="text-sm bg-green-600 hover:bg-green-500 text-white px-4 py-2 rounded-lg transition-colors font-medium"
@@ -87,8 +95,14 @@ export default function Nav() {
               {l.label}
             </a>
           ))}
+          <button
+            onClick={() => { setAboutOpen(true); setMenuOpen(false); }}
+            className="text-gray-300 hover:text-white transition-colors text-left"
+          >
+            About
+          </button>
           <a
-            href="https://calendly.com/dyanailabs"
+            href="https://calendly.com/livshytsd-dyanailabs"
             target="_blank"
             rel="noopener noreferrer"
             className="text-sm bg-green-600 hover:bg-green-500 text-white px-4 py-2 rounded-lg transition-colors font-medium text-center"
@@ -97,6 +111,8 @@ export default function Nav() {
           </a>
         </div>
       )}
+
+      <AboutModal isOpen={aboutOpen} onClose={() => setAboutOpen(false)} />
     </header>
   );
 }

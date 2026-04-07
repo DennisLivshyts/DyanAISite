@@ -45,7 +45,7 @@ export default function Hero() {
         {/* CTAs */}
         <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
           <a
-            href="https://calendly.com/dyanailabs"
+            href="https://calendly.com/livshytsd-dyanailabs"
             target="_blank"
             rel="noopener noreferrer"
             className="w-full sm:w-auto bg-green-600 hover:bg-green-500 text-white font-semibold px-8 py-4 rounded-xl transition-all duration-200 hover:shadow-lg hover:shadow-green-600/20"
