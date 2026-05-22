@@ -52,6 +52,7 @@ export default function Nav() {
           ))}
           <a
             href="#founder"
+            onClick={() => window.dispatchEvent(new CustomEvent("open-founder"))}
             className="text-sm text-gray-300 hover:text-white transition-colors"
           >
             About
@@ -95,7 +96,7 @@ export default function Nav() {
           ))}
           <a
             href="#founder"
-            onClick={() => setMenuOpen(false)}
+            onClick={() => { setMenuOpen(false); window.dispatchEvent(new CustomEvent("open-founder")); }}
             className="text-gray-300 hover:text-white transition-colors py-2 border-b border-white/5"
           >
             About

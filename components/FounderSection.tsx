@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 
 /* ── static data ── */
 const EXPERIENCE = [
@@ -90,6 +90,7 @@ export default function FounderSection() {
   const [state, setState] = useState<"idle" | "exploding" | "open">("idle");
   const [tab, setTab] = useState<Tab>("Experience");
   const [tabKey, setTabKey] = useState(0);
+  const sectionRef = useRef<HTMLElement>(null);
 
   const handleExpand = () => {
     if (state !== "idle") return;
@@ -97,12 +98,27 @@ export default function FounderSection() {
     setTimeout(() => setState("open"), 860);
   };
 
+  useEffect(() => {
+    const handler = () => {
+      if (state !== "idle") return;
+      setState("exploding");
+      setTimeout(() => {
+        setState("open");
+        setTimeout(() => {
+          sectionRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+        }, 100);
+      }, 860);
+    };
+    window.addEventListener("open-founder", handler);
+    return () => window.removeEventListener("open-founder", handler);
+  }, [state]);
+
   const handleCollapse = () => setState("idle");
 
   const switchTab = (t: Tab) => { setTab(t); setTabKey((k) => k + 1); };
 
   return (
-    <section id="founder" className="relative overflow-hidden">
+    <section ref={sectionRef} id="founder" className="relative overflow-hidden">
 
       {/* ── COLLAPSED: subtle section divider ── */}
       {state !== "open" && (
