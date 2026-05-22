@@ -1,13 +1,11 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import AboutModal from "./AboutModal";
 import BookingModal from "./BookingModal";
 
 export default function Nav() {
   const [scrolled, setScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
-  const [aboutOpen, setAboutOpen] = useState(false);
   const [bookingOpen, setBookingOpen] = useState(false);
 
   useEffect(() => {
@@ -52,12 +50,12 @@ export default function Nav() {
               {l.label}
             </a>
           ))}
-          <button
-            onClick={() => setAboutOpen(true)}
+          <a
+            href="#founder"
             className="text-sm text-gray-300 hover:text-white transition-colors"
           >
             About
-          </button>
+          </a>
           <button
             onClick={() => setBookingOpen(true)}
             className="text-sm bg-green-600 hover:bg-green-500 text-white px-4 py-2 rounded-lg transition-colors font-medium"
@@ -95,12 +93,13 @@ export default function Nav() {
               {l.label}
             </a>
           ))}
-          <button
-            onClick={() => { setAboutOpen(true); setMenuOpen(false); }}
-            className="text-gray-300 hover:text-white transition-colors text-left py-2 border-b border-white/5"
+          <a
+            href="#founder"
+            onClick={() => setMenuOpen(false)}
+            className="text-gray-300 hover:text-white transition-colors py-2 border-b border-white/5"
           >
             About
-          </button>
+          </a>
           <button
             onClick={() => { setBookingOpen(true); setMenuOpen(false); }}
             className="mt-2 text-sm bg-green-600 hover:bg-green-500 text-white px-4 py-2.5 rounded-lg transition-colors font-medium text-center"
@@ -110,7 +109,6 @@ export default function Nav() {
         </div>
       )}
 
-      <AboutModal isOpen={aboutOpen} onClose={() => setAboutOpen(false)} />
       <BookingModal isOpen={bookingOpen} onClose={() => setBookingOpen(false)} />
     </header>
   );
