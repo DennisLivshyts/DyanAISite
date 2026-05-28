@@ -3,80 +3,154 @@
 import { useState } from "react";
 import BookingModal from "./BookingModal";
 
+const TICKER = [
+  "Custom Websites",
+  "AI Booking Agents",
+  "Marketing Automation",
+  "Lead Generation",
+  "AI Outreach Pipelines",
+  "Business Integrations",
+  "Custom Websites",
+  "AI Booking Agents",
+  "Marketing Automation",
+  "Lead Generation",
+  "AI Outreach Pipelines",
+  "Business Integrations",
+];
+
+const HUD_ROWS = [
+  { label: "Status", value: "Accepting Clients" },
+  { label: "Avg Delivery", value: "2–3 Weeks" },
+  { label: "Location", value: "Los Angeles, CA" },
+  { label: "Stack", value: "Next.js · AI · Node" },
+];
+
 export default function Hero() {
   const [bookingOpen, setBookingOpen] = useState(false);
 
   return (
-    <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
-      {/* Background grid */}
-      <div
-        className="absolute inset-0 opacity-[0.04]"
-        style={{
-          backgroundImage:
-            "linear-gradient(#52B788 1px, transparent 1px), linear-gradient(90deg, #52B788 1px, transparent 1px)",
-          backgroundSize: "60px 60px",
-        }}
-      />
+    <section className="relative min-h-screen flex flex-col overflow-hidden">
 
-      {/* Radial glow */}
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] rounded-full bg-green-700/10 blur-3xl pointer-events-none" />
+      {/* Main content */}
+      <div className="relative z-10 flex-1 flex items-center">
+        <div className="max-w-7xl mx-auto px-6 w-full pt-32 pb-12">
+          <div className="grid lg:grid-cols-[1fr_280px] gap-20 items-center">
 
-      <div className="relative z-10 max-w-5xl mx-auto px-6 text-center">
-        {/* Eyebrow */}
-        <div className="inline-flex items-center gap-2 border border-green-600/40 bg-green-700/10 rounded-full px-4 py-1.5 mb-8">
-          <span className="w-2 h-2 rounded-full bg-green-400 animate-pulse" />
-          <span className="text-green-400 text-sm font-medium tracking-wide">
-            AI-Powered Business Solutions
-          </span>
+            {/* LEFT: Headline block */}
+            <div>
+              {/* Mission label — replaces pill badge */}
+              <div className="flex items-center gap-4 mb-10">
+                <div className="h-px w-10 bg-teal-400" />
+                <span className="font-space-mono text-[11px] tracking-[0.35em] text-teal-400 uppercase">
+                  Mission // 001
+                </span>
+              </div>
+
+              {/* Giant Syne headline */}
+              <h1 className="font-syne font-bold leading-none tracking-tight mb-10"
+                style={{ fontSize: "clamp(2.6rem, 5.5vw, 5rem)" }}>
+                <span className="block text-white">Your Business,</span>
+                <span className="block text-white">Intelligently</span>
+                <span className="block text-gradient">Integrated.</span>
+              </h1>
+
+              <p className="text-gray-400 text-lg max-w-md leading-relaxed mb-12 font-light">
+                We build custom websites and deploy AI agents that handle your
+                marketing, outreach, and bookings — so you can focus on running
+                your business.
+              </p>
+
+              {/* CTAs */}
+              <div className="flex flex-wrap items-center gap-8">
+                <button
+                  onClick={() => setBookingOpen(true)}
+                  className="group font-syne font-bold text-navy-950 bg-teal-400 hover:bg-teal-300 text-sm tracking-wide px-8 py-4 transition-all duration-200 flex items-center gap-3"
+                  style={{ clipPath: "polygon(0 0, calc(100% - 14px) 0, 100% 14px, 100% 100%, 14px 100%, 0 calc(100% - 14px))" }}
+                >
+                  Book a Free Consultation
+                  <svg className="w-4 h-4 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                  </svg>
+                </button>
+
+                <a
+                  href="#services"
+                  className="group font-space-mono text-[11px] tracking-[0.25em] uppercase text-gray-500 hover:text-teal-400 transition-colors flex items-center gap-3"
+                >
+                  <span className="w-8 h-px bg-current group-hover:w-12 transition-all duration-300" />
+                  See What We Build
+                </a>
+              </div>
+            </div>
+
+            {/* RIGHT: Mission Status HUD */}
+            <div className="hidden lg:block">
+              <div
+                className="relative border border-teal-500/25 bg-navy-950/90 backdrop-blur-sm p-7"
+                style={{ clipPath: "polygon(0 0, calc(100% - 24px) 0, 100% 24px, 100% 100%, 0 100%)" }}
+              >
+                {/* Notched corner accent */}
+                <div className="absolute top-0 right-0 overflow-hidden" style={{ width: 24, height: 24 }}>
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                    <polygon points="0,0 24,0 24,24" fill="rgba(45,212,191,0.1)" />
+                    <line x1="0" y1="0" x2="24" y2="24" stroke="rgba(45,212,191,0.3)" strokeWidth="1" />
+                  </svg>
+                </div>
+
+                {/* Header */}
+                <div className="flex items-center justify-between mb-6 pb-5 border-b border-white/8">
+                  <span className="font-space-mono text-[10px] tracking-[0.3em] text-gray-500 uppercase">
+                    System Status
+                  </span>
+                  <div className="flex items-center gap-1.5">
+                    <span className="w-1.5 h-1.5 rounded-full bg-teal-400 animate-pulse" />
+                    <span className="font-space-mono text-[10px] text-teal-400">Online</span>
+                  </div>
+                </div>
+
+                {/* Data rows */}
+                <div className="space-y-5">
+                  {HUD_ROWS.map((row) => (
+                    <div key={row.label}>
+                      <div className="font-space-mono text-[9px] tracking-[0.28em] text-gray-600 uppercase mb-1">
+                        {row.label}
+                      </div>
+                      <div className="font-space-mono text-sm text-white">
+                        {row.value}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Bottom accent line */}
+                <div className="mt-6 pt-5 border-t border-white/8">
+                  <div className="h-px" style={{ background: "linear-gradient(90deg, rgba(45,212,191,0.5), transparent)" }} />
+                </div>
+
+                {/* Bottom-left corner brackets */}
+                <div className="absolute bottom-0 left-0 w-4 h-4 border-b border-l border-teal-500/30" />
+              </div>
+            </div>
+
+          </div>
         </div>
-
-        {/* Headline */}
-        <h1 className="text-5xl md:text-7xl font-bold tracking-tight leading-tight mb-6">
-          <span className="text-white">Your Business,</span>
-          <br />
-          <span className="text-gradient">Intelligently Integrated.</span>
-        </h1>
-
-        {/* Tagline */}
-        <p className="text-xl md:text-2xl text-gray-400 font-light mb-4">
-          Business Integrations for a Modern Era
-        </p>
-
-        {/* Sub-description */}
-        <p className="text-gray-500 max-w-2xl mx-auto mb-12 leading-relaxed">
-          We build custom websites and deploy intelligent AI agents that handle
-          your marketing, outreach, and bookings — so you can focus on running
-          your business.
-        </p>
-
-        {/* CTAs */}
-        <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-          <button
-            onClick={() => setBookingOpen(true)}
-            className="w-full sm:w-auto bg-green-600 hover:bg-green-500 text-white font-semibold px-8 py-4 rounded-xl transition-all duration-200 hover:shadow-lg hover:shadow-green-600/20"
-          >
-            Book a Free Consultation
-          </button>
-          <a
-            href="#services"
-            className="w-full sm:w-auto border border-navy-700 hover:border-green-600/50 text-gray-300 hover:text-white font-medium px-8 py-4 rounded-xl transition-all duration-200"
-          >
-            See What We Do
-          </a>
-        </div>
-
-        {/* Social proof */}
-        <p className="mt-12 text-gray-600 text-sm">
-          Serving local businesses ready to grow with AI
-        </p>
       </div>
 
-      {/* Scroll indicator */}
-      <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 text-gray-600">
-        <span className="text-xs tracking-widest uppercase">Scroll</span>
-        <svg className="w-4 h-4 animate-bounce" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-        </svg>
+      {/* Ticker strip */}
+      <div className="relative z-10 border-t border-white/8 overflow-hidden">
+        <div className="py-3.5 overflow-hidden">
+          <div className="animate-marquee flex items-center">
+            {TICKER.map((item, i) => (
+              <span
+                key={i}
+                className="font-space-mono text-[10px] tracking-[0.3em] text-gray-600 uppercase px-10 whitespace-nowrap inline-flex items-center gap-10"
+              >
+                {item}
+                <span className="text-teal-500/25 text-xs">◆</span>
+              </span>
+            ))}
+          </div>
+        </div>
       </div>
 
       <BookingModal isOpen={bookingOpen} onClose={() => setBookingOpen(false)} />

@@ -4,7 +4,7 @@ export default function Footer() {
       <div className="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4 text-sm text-gray-600">
         <span>
           <span className="text-white font-medium">Dyan</span>
-          <span className="text-green-500 font-medium">AI</span>
+          <span className="text-gradient font-medium">AI</span>
           <span className="text-white font-medium"> Labs</span>
           {" "}— Business Integrations for a Modern Era
         </span>

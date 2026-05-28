@@ -59,7 +59,7 @@ export default function Nav() {
           </a>
           <button
             onClick={() => setBookingOpen(true)}
-            className="text-sm bg-green-600 hover:bg-green-500 text-white px-4 py-2 rounded-lg transition-colors font-medium"
+            className="text-sm bg-teal-500 hover:bg-teal-400 text-navy-950 px-4 py-2 rounded-lg transition-colors font-medium"
           >
             Book a Call
           </button>
@@ -103,7 +103,7 @@ export default function Nav() {
           </a>
           <button
             onClick={() => { setBookingOpen(true); setMenuOpen(false); }}
-            className="mt-2 text-sm bg-green-600 hover:bg-green-500 text-white px-4 py-2.5 rounded-lg transition-colors font-medium text-center"
+            className="mt-2 text-sm bg-teal-500 hover:bg-teal-400 text-navy-950 px-4 py-2.5 rounded-lg transition-colors font-medium text-center"
           >
             Book a Call
           </button>

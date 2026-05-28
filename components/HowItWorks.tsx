@@ -21,40 +21,62 @@ const steps = [
 
 export default function HowItWorks() {
   return (
-    <section id="how-it-works" className="py-24 px-6 bg-navy-950">
+    <section id="how-it-works" className="py-28 px-6 bg-navy-950">
       <div className="max-w-5xl mx-auto">
-        {/* Header */}
-        <div className="text-center mb-16">
-          <p className="text-green-500 text-sm font-semibold tracking-widest uppercase mb-3">
+
+        {/* Header — left-aligned */}
+        <div className="mb-24">
+          <span className="font-space-mono text-[11px] tracking-[0.35em] text-teal-500 uppercase">
             The Process
-          </p>
-          <h2 className="text-4xl md:text-5xl font-bold text-white mb-4">
-            Simple. Fast. Done Right.
+          </span>
+          <h2 className="font-syne text-4xl md:text-5xl font-bold text-white mt-4 leading-tight">
+            How We Work
           </h2>
-          <p className="text-gray-400 max-w-xl mx-auto">
-            We keep things straightforward — no bloated projects, no endless
-            back-and-forth. Here's how we work.
-          </p>
         </div>
 
-        {/* Steps */}
+        {/* Vertical timeline — schematic style */}
         <div className="relative">
-          {/* Connector line */}
-          <div className="hidden md:block absolute top-8 left-[calc(16.67%+1rem)] right-[calc(16.67%+1rem)] h-px bg-gradient-to-r from-transparent via-green-600/30 to-transparent" />
+          {/* Left rail gradient line */}
+          <div
+            className="absolute top-4 bottom-4 hidden md:block"
+            style={{
+              left: "27px",
+              width: "1px",
+              background: "linear-gradient(180deg, rgba(45,212,191,0.6) 0%, rgba(45,212,191,0.1) 100%)",
+            }}
+          />
 
-          <div className="grid md:grid-cols-3 gap-8">
-            {steps.map((step) => (
-              <div key={step.number} className="flex flex-col items-center text-center gap-4">
-                {/* Number badge */}
-                <div className="w-16 h-16 rounded-full border border-green-600/40 bg-green-700/10 flex items-center justify-center text-green-400 font-mono font-bold text-lg z-10">
-                  {step.number}
+          <div className="space-y-0">
+            {steps.map((step, i) => (
+              <div
+                key={step.number}
+                className="relative grid md:grid-cols-[56px_1fr] gap-6 md:gap-12"
+                style={{ paddingBottom: i < steps.length - 1 ? "4rem" : 0 }}
+              >
+                {/* Step marker — square, not circle */}
+                <div className="relative z-10 flex-shrink-0">
+                  <div
+                    className="w-14 h-14 border border-teal-500/35 bg-navy-950 flex items-center justify-center"
+                    style={{ clipPath: "polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 8px 100%, 0 calc(100% - 8px))" }}
+                  >
+                    <span className="font-space-mono text-teal-400 text-sm font-bold">{step.number}</span>
+                  </div>
                 </div>
-                <h3 className="text-xl font-semibold text-white">{step.title}</h3>
-                <p className="text-gray-400 text-sm leading-relaxed">{step.description}</p>
+
+                {/* Content */}
+                <div className="pt-3 pb-2">
+                  <h3 className="font-syne text-xl md:text-2xl font-bold text-white mb-4 leading-tight">
+                    {step.title}
+                  </h3>
+                  <p className="text-gray-400 leading-relaxed max-w-xl">
+                    {step.description}
+                  </p>
+                </div>
               </div>
             ))}
           </div>
         </div>
+
       </div>
     </section>
   );

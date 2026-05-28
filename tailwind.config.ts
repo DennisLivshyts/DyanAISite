@@ -23,8 +23,10 @@ const config: Config = {
         },
       },
       fontFamily: {
-        sans: ["Inter", "system-ui", "sans-serif"],
-        mono: ["JetBrains Mono", "monospace"],
+        sans: ["DM Sans", "system-ui", "sans-serif"],
+        syne: ["Syne", "sans-serif"],
+        "space-mono": ["Space Mono", "monospace"],
+        mono: ["Space Mono", "monospace"],
       },
     },
   },

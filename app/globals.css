@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=Space+Mono:ital,wght@0,400;0,700;1,400&family=DM+Sans:wght@300;400;500&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -12,7 +12,18 @@
   body {
     background-color: #0A1628;
     color: #ffffff;
+    font-family: "DM Sans", system-ui, sans-serif;
   }
+}
+
+@keyframes marquee {
+  0%   { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+.animate-marquee {
+  animation: marquee 35s linear infinite;
+  width: max-content;
+  will-change: transform;
 }
 
 /* ── Nebula modal animations ── */
@@ -160,15 +171,18 @@
 }
 
 @layer utilities {
+  .font-syne { font-family: "Syne", sans-serif; }
+  .font-space-mono { font-family: "Space Mono", monospace; }
+
   .text-gradient {
-    background: linear-gradient(135deg, #52B788 0%, #74C69D 100%);
+    background: linear-gradient(100deg, #2DD4BF 10%, #67E8F9 60%, #a5f3fc 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
   }
 
   .border-green-glow {
-    box-shadow: 0 0 0 1px rgba(64, 145, 108, 0.3), 0 0 20px rgba(64, 145, 108, 0.1);
+    box-shadow: 0 0 0 1px rgba(20, 184, 166, 0.3), 0 0 20px rgba(20, 184, 166, 0.1);
   }
 
   .card-hover {
