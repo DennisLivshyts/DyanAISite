@@ -21,7 +21,7 @@ const TICKER = [
 const HUD_ROWS = [
   { label: "Status", value: "Accepting Clients" },
   { label: "Avg Delivery", value: "2–3 Weeks" },
-  { label: "Location", value: "Los Angeles, CA" },
+  { label: "Location", value: "San Francisco, CA" },
   { label: "Stack", value: "Next.js · AI · Node" },
 ];
 
@@ -51,7 +51,7 @@ export default function Hero() {
                 style={{ fontSize: "clamp(2.6rem, 5.5vw, 5rem)" }}>
                 <span className="block text-white">Your Business,</span>
                 <span className="block text-white">Intelligently</span>
-                <span className="block text-gradient">Integrated.</span>
+                <span className="block text-gradient" style={{ paddingBottom: '0.08em' }}>Integrated.</span>
               </h1>
 
               <p className="text-gray-400 text-lg max-w-md leading-relaxed mb-12 font-light">
