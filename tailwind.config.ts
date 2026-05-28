@@ -24,7 +24,7 @@ const config: Config = {
       },
       fontFamily: {
         sans: ["DM Sans", "system-ui", "sans-serif"],
-        syne: ["Syne", "sans-serif"],
+        syne: ["Space Grotesk", "sans-serif"],
         "space-mono": ["Space Mono", "monospace"],
         mono: ["Space Mono", "monospace"],
       },
