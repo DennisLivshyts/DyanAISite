@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import BookingModal from "./BookingModal";
+import Logo from "./Logo";
 
 export default function Nav() {
   const [scrolled, setScrolled] = useState(false);
@@ -31,7 +32,8 @@ export default function Nav() {
     >
       <nav className="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
         {/* Logo */}
-        <a href="#" className="flex items-center gap-2">
+        <a href="#" className="flex items-center gap-3" aria-label="DyanAI Labs, home">
+          <Logo size={44} decorative className="shrink-0" />
           <span className="text-xl font-bold tracking-tight">
             <span className="text-white">Dyan</span>
             <span className="text-gradient">AI</span>
