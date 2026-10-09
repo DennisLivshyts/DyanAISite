@@ -15,7 +15,7 @@ function FloatLabel({ label, children }: { label: string; children: React.ReactN
 }
 
 export default function Contact() {
-  const [form, setForm] = useState({ name: "", email: "", business: "", message: "" });
+  const [form, setForm] = useState({ name: "", email: "", business: "", message: "", website: "" });
   const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
   const [bookingOpen, setBookingOpen] = useState(false);
 
@@ -164,8 +164,12 @@ export default function Contact() {
           ) : (
             <form
               onSubmit={handleSubmit}
-              className="bg-navy-900 border border-navy-700 rounded-2xl p-8 space-y-4"
+              className="relative bg-navy-900 border border-navy-700 rounded-2xl p-8 space-y-4"
             >
+              {/* Honeypot: hidden from people, filled in by bots */}
+              <input name="website" type="text" tabIndex={-1} autoComplete="off" aria-hidden="true"
+                value={form.website} onChange={handleChange}
+                className="absolute -left-[9999px] w-px h-px opacity-0" />
               <div className="mb-2">
                 <p className="text-white font-semibold text-lg">Send a message</p>
                 <p className="text-gray-500 text-sm mt-1">We'll reply within one business day.</p>

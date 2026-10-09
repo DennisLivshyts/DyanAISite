@@ -11,7 +11,8 @@ function firstDOW(y: number, m: number)    { return new Date(y, m, 1).getDay(); 
 function sameDay(a: Date, b: Date)         { return a.toDateString() === b.toDateString(); }
 function isPast(d: Date)                   { const t = new Date(); t.setHours(0,0,0,0); return d < t; }
 function isWeekend(d: Date)                { return d.getDay() === 0 || d.getDay() === 6; }
-function toParam(d: Date)                  { return d.toISOString().split("T")[0]; }
+// Local calendar date, not toISOString(): that is UTC and shifts the day for visitors east of UTC
+function toParam(d: Date)                  { return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`; }
 function fmtTime(slot: string) {
   const [h, m] = slot.split(":").map(Number);
   const p = h >= 12 ? "PM" : "AM";
@@ -98,7 +99,7 @@ export default function BookingModal({ isOpen, onClose }: Props) {
   const [slots,         setSlots]        = useState<string[]>([]);
   const [loadingSlots,  setLoadingSlots] = useState(false);
   const [selectedTime,  setSelectedTime] = useState<string|null>(null);
-  const [form,          setForm]         = useState({ name:"", email:"", notes:"" });
+  const [form,          setForm]         = useState({ name:"", email:"", notes:"", website:"" });
   const [submitting,    setSubmitting]   = useState(false);
   const [error,         setError]        = useState("");
   const gridRef = useRef<HTMLDivElement>(null);
@@ -115,7 +116,7 @@ export default function BookingModal({ isOpen, onClose }: Props) {
   }, [isOpen]);
   // Reset on open
   useEffect(() => {
-    if (isOpen) { setStep(0); setSelectedDate(null); setSelectedTime(null); setSlots([]); setForm({name:"",email:"",notes:""}); setError(""); }
+    if (isOpen) { setStep(0); setSelectedDate(null); setSelectedTime(null); setSlots([]); setForm({name:"",email:"",notes:"",website:""}); setError(""); }
   }, [isOpen]);
 
   // Fetch slots when date selected
@@ -172,10 +173,15 @@ export default function BookingModal({ isOpen, onClose }: Props) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ date: toParam(selectedDate), time: selectedTime, ...form }),
       });
-      if (!res.ok) throw new Error();
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        // 409/429/400 carry a message meant for the visitor
+        throw new Error(res.status < 500 && data.error ? data.error : "");
+      }
       setStep(3);
-    } catch {
-      setError("Something went wrong. Email us at livshytsd@dyanailabs.com");
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : "";
+      setError(msg || "Something went wrong. Email us at livshytsd@dyanailabs.com");
     } finally {
       setSubmitting(false);
     }
@@ -424,6 +430,11 @@ export default function BookingModal({ isOpen, onClose }: Props) {
                     What would you like to discuss?
                   </label>
                 </div>
+
+                {/* Honeypot: hidden from people, filled in by bots */}
+                <input name="website" type="text" tabIndex={-1} autoComplete="off" aria-hidden="true"
+                  value={form.website} onChange={e => setForm(f => ({ ...f, website: e.target.value }))}
+                  className="absolute -left-[9999px] w-px h-px opacity-0" />
 
                 {error && <p className="text-red-400 text-sm text-center">{error}</p>}
 
