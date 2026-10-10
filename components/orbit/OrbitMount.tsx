@@ -185,14 +185,17 @@ export default function OrbitMount() {
         done = true;
         tl?.kill();
         if (!reduce && webglAvailable()) startScene();   // fades in under the overlay's fade-out
-        if (root) gsap.to(root, { opacity: 0, duration: 0.45, ease: "power1.out", onComplete: endLaunch });
+        // a hidden tab gets no animation frames, so a tweened fade would never finish
+        if (root && !document.hidden) gsap.to(root, { opacity: 0, duration: 0.45, ease: "power1.out", onComplete: endLaunch });
         else endLaunch();
         ready.then(plotIn);
       };
 
       // Only skip when there's genuinely no time left for a climb; otherwise the
       // ignition is already running (CSS) and the climb always gets to play.
-      if (!root || !trail || !craft || !glowEl || !label || window.scrollY > 40 || remaining < 700) {
+      // A background tab (opened with a middle-click, say) gets no animation frames
+      // at all: skip the show rather than leave the scene waiting on it.
+      if (!root || !trail || !craft || !glowEl || !label || window.scrollY > 40 || remaining < 700 || document.hidden) {
         // too late, already scrolled, or no overlay: don't make anyone wait
         done = true;
         endLaunch();
@@ -242,6 +245,11 @@ export default function OrbitMount() {
           .add(finish);
         }, wait);
       }
+
+      // Belt and braces: whatever happens to the animation, the launch ends — and
+      // the scene starts — at the cap.
+      const capTimer = window.setTimeout(finish, Math.max(0, remaining));
+      killers.push(() => window.clearTimeout(capTimer));
 
       const skip = () => finish();
       window.addEventListener("pointerdown", skip, { once: true });

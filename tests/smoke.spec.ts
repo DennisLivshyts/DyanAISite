@@ -278,3 +278,15 @@ test("unknown pages get the off-course 404, no launch, a way home", async ({ pag
   await expect(page).toHaveURL(/\/$/);
   await expect(page.locator("h1").first()).toContainText("You arrive with");
 });
+
+test("launch: a background tab skips it and still gets the scene", async ({ page }) => {
+  // simulate a tab opened in the background: hidden, no animation frames
+  await page.addInitScript(() => {
+    Object.defineProperty(document, "hidden", { get: () => true });
+    Object.defineProperty(document, "visibilityState", { get: () => "hidden" });
+    window.requestAnimationFrame = () => 0;
+  });
+  await page.goto("/");
+  await expect(page.locator("html")).not.toHaveClass(/launching/, { timeout: 2000 });
+  await expect(page.locator("canvas[data-orbit-scene='scene']")).toBeAttached({ timeout: 8000 });
+});
