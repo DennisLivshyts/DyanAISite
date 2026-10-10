@@ -205,6 +205,62 @@ export function phaseAt(th: number): Phase {
   return "Escape";
 }
 
+/* ── keyframes ──────────────────────────────────────────────────────────────
+ * One per page section (the scroll director pins each section to its `th`).
+ * x/y: where the body sits, as fractions of the viewport (0,0 top-left).
+ * size: ring radius as a fraction of the viewport's shorter side.
+ * dim: canvas opacity, lowered behind full-width text.
+ */
+export type Key = { th: number; x: number; y: number; size: number; tiltX: number; tiltY: number; rotZ: number; dim: number };
+
+export const KEYS_DESKTOP: Key[] = [
+  { th: TH_FAR,     x: 0.70, y: 0.62, size: 0.30, tiltX: -1.00, tiltY: 0.30, rotZ: -1.20, dim: 1.00 }, // Hero: approach — craft starts in the open band above, between headline and panel
+  { th: TH_IN,      x: 0.90, y: 0.56, size: 0.24, tiltX: -0.70, tiltY: 0.22, rotZ: -0.30, dim: 0.35 }, // Capabilities: through the ring, in the margin
+  { th: 0,          x: 0.80, y: 0.30, size: 0.26, tiltX: -0.45, tiltY: 0.12, rotZ: 0.10, dim: 1.00 }, // Work: the whip, above the rail
+  { th: TH_PROCESS, x: 0.78, y: 0.52, size: 0.32, tiltX: -0.25, tiltY: 0.06, rotZ: 0.06, dim: 0.95 }, // Process: climbing out
+  { th: TH_CROSS,   x: 0.76, y: 0.40, size: 0.26, tiltX: -0.12, tiltY: 0.03, rotZ: 0.03, dim: 1.00 }, // Contact: the punch-through, beside the heading
+  { th: TH_OUT,     x: 0.50, y: 0.36, size: 0.22, tiltX: 0.00,  tiltY: 0.00, rotZ: 0.00, dim: 1.00 }, // Sign-off: the mark
+];
+
+export const KEYS_MOBILE: Key[] = [
+  { th: TH_FAR,     x: 0.66, y: 0.30, size: 0.40, tiltX: -1.00, tiltY: 0.25, rotZ: -1.55, dim: 0.90 }, // craft starts top-centre, on screen
+  { th: TH_IN,      x: 0.78, y: 0.20, size: 0.34, tiltX: -0.70, tiltY: 0.18, rotZ: 0.05, dim: 0.45 },
+  { th: 0,          x: 0.72, y: 0.18, size: 0.36, tiltX: -0.45, tiltY: 0.10, rotZ: 0.08, dim: 0.80 },
+  { th: TH_PROCESS, x: 0.76, y: 0.18, size: 0.32, tiltX: -0.25, tiltY: 0.05, rotZ: 0.05, dim: 0.45 },
+  { th: TH_CROSS,   x: 0.74, y: 0.18, size: 0.32, tiltX: -0.12, tiltY: 0.03, rotZ: 0.03, dim: 0.60 },
+  { th: TH_OUT,     x: 0.50, y: 0.36, size: 0.34, tiltX: 0.00,  tiltY: 0.00, rotZ: 0.00, dim: 1.00 },
+];
+
+/** The scene's camera: perspective, looking down −z at the orbital plane. */
+export const CAMERA = { fov: 32, z: 400 };
+
+/**
+ * Where the craft sits on screen at the very start of the flight, in CSS px —
+ * the same transform the scene applies, done by hand so the launch screen can
+ * aim for it without loading three.js. Keep in step with scene.ts render().
+ */
+export function approachScreen(w: number, h: number, mobile: boolean): { x: number; y: number } {
+  const k = (mobile ? KEYS_MOBILE : KEYS_DESKTOP)[0];
+  const tanH = Math.tan((CAMERA.fov * Math.PI) / 360);
+  const pxPerUnit = h / (2 * CAMERA.z * tanH);
+  const scale = (k.size * Math.min(w, h)) / pxPerUnit / (RSOI * S);
+  const [hx, hy] = world(thetaAt(0));
+  // three's Euler "XYZ": R = Rx · Ry · Rz, applied to the scaled point
+  let x = hx * scale, y = hy * scale, z = 0;
+  const cz = Math.cos(k.rotZ), sz = Math.sin(k.rotZ);
+  [x, y] = [x * cz - y * sz, x * sz + y * cz];
+  const cy = Math.cos(k.tiltY), sy = Math.sin(k.tiltY);
+  [x, z] = [x * cy + z * sy, -x * sy + z * cy];
+  const cx = Math.cos(k.tiltX), sx = Math.sin(k.tiltX);
+  [y, z] = [y * cx - z * sx, y * sx + z * cx];
+  x += (k.x - 0.5) * w / pxPerUnit;
+  y += -(k.y - 0.5) * h / pxPerUnit;
+  const depth = CAMERA.z - z;
+  const ndcX = x / (depth * tanH * (w / h));
+  const ndcY = y / (depth * tanH);
+  return { x: (ndcX * 0.5 + 0.5) * w, y: (1 - (ndcY * 0.5 + 0.5)) * h };
+}
+
 /**
  * The mark's gradient runs across the ribbon's bounding box (SVG
  * objectBoundingBox, x1 .06 y1 .04 → x2 .94 y2 .96). gradT gives the same

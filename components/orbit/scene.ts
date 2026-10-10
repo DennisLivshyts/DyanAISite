@@ -13,40 +13,14 @@
 import * as THREE from "three";
 import {
   GEO, TONES, RBODY, RSOI, S, LIMB, CLEAR,
-  TH_FAR, TH_IN, TH_OUT, TH_CROSS, TH_PROCESS, FLIGHT,
-  frac, width, world, thetaAt, flightAt, gradT, headRFor,
+  TH_FAR, TH_IN, TH_OUT, TH_CROSS, FLIGHT, CAMERA, KEYS_DESKTOP, KEYS_MOBILE,
+  frac, width, world, thetaAt, flightAt, gradT, headRFor, type Key,
 } from "@/lib/orbit";
 
 const T = TONES.bright;
 
 // Exact hex colours, like the SVG: no linear-space conversion anywhere.
 THREE.ColorManagement.enabled = false;
-
-/* ── keyframes ──────────────────────────────────────────────────────────────
- * One per page section (the scroll director pins each section to its `th`).
- * x/y: where the body sits, as fractions of the viewport (0,0 top-left).
- * size: ring radius as a fraction of the viewport's shorter side.
- * dim: canvas opacity, lowered behind full-width text.
- */
-export type Key = { th: number; x: number; y: number; size: number; tiltX: number; tiltY: number; rotZ: number; dim: number };
-
-const DESKTOP: Key[] = [
-  { th: TH_FAR,     x: 0.70, y: 0.62, size: 0.30, tiltX: -1.00, tiltY: 0.30, rotZ: -0.90, dim: 1.00 }, // Hero: approach (from above, clear of the headline)
-  { th: TH_IN,      x: 0.90, y: 0.56, size: 0.24, tiltX: -0.70, tiltY: 0.22, rotZ: -0.30, dim: 0.35 }, // Capabilities: through the ring, in the margin
-  { th: 0,          x: 0.80, y: 0.30, size: 0.26, tiltX: -0.45, tiltY: 0.12, rotZ: 0.10, dim: 1.00 }, // Work: the whip, above the rail
-  { th: TH_PROCESS, x: 0.78, y: 0.52, size: 0.32, tiltX: -0.25, tiltY: 0.06, rotZ: 0.06, dim: 0.95 }, // Process: climbing out
-  { th: TH_CROSS,   x: 0.76, y: 0.40, size: 0.26, tiltX: -0.12, tiltY: 0.03, rotZ: 0.03, dim: 1.00 }, // Contact: the punch-through, beside the heading
-  { th: TH_OUT,     x: 0.50, y: 0.36, size: 0.22, tiltX: 0.00,  tiltY: 0.00, rotZ: 0.00, dim: 1.00 }, // Sign-off: the mark
-];
-
-const MOBILE: Key[] = [
-  { th: TH_FAR,     x: 0.66, y: 0.30, size: 0.40, tiltX: -1.00, tiltY: 0.25, rotZ: -0.60, dim: 0.90 },
-  { th: TH_IN,      x: 0.78, y: 0.20, size: 0.34, tiltX: -0.70, tiltY: 0.18, rotZ: 0.05, dim: 0.45 },
-  { th: 0,          x: 0.72, y: 0.18, size: 0.36, tiltX: -0.45, tiltY: 0.10, rotZ: 0.08, dim: 0.80 },
-  { th: TH_PROCESS, x: 0.76, y: 0.18, size: 0.32, tiltX: -0.25, tiltY: 0.05, rotZ: 0.05, dim: 0.45 },
-  { th: TH_CROSS,   x: 0.74, y: 0.18, size: 0.32, tiltX: -0.12, tiltY: 0.03, rotZ: 0.03, dim: 0.60 },
-  { th: TH_OUT,     x: 0.50, y: 0.36, size: 0.34, tiltX: 0.00,  tiltY: 0.00, rotZ: 0.00, dim: 1.00 },
-];
 
 /** Ribbon width and head size in flight, relative to the mark (1 at resolve). */
 const FLIGHT_SCALE = 0.32;
@@ -210,19 +184,6 @@ const ringVert = glsl`
   }
 `;
 
-// The moon: something that stays in orbit (the client we keep supporting).
-// Lit from the same side as the body's crescent.
-const moonVert = bodyVert;
-const moonFrag = glsl`
-  uniform vec3 uDark; uniform vec3 uLit;
-  uniform float uFade;
-  varying vec3 vNormal;
-  void main() {
-    float l = smoothstep(-0.15, 0.45, dot(normalize(vNormal), normalize(vec3(-0.6, 0.65, 0.45))));
-    gl_FragColor = vec4(mix(uDark, uLit, l), uFade);
-  }
-`;
-
 function discTexture() {
   const c = document.createElement("canvas");
   c.width = c.height = 128;
@@ -252,8 +213,8 @@ export function createOrbitScene(canvas: HTMLCanvasElement, opts: { mobile: bool
   renderer.setClearColor(0x000000, 0);
 
   const scene = new THREE.Scene();
-  const camera = new THREE.PerspectiveCamera(32, 1, 1, 2000);
-  camera.position.set(0, 0, 400);
+  const camera = new THREE.PerspectiveCamera(CAMERA.fov, 1, 1, 2000);
+  camera.position.set(0, 0, CAMERA.z);
 
   const orbit = new THREE.Group();     // positioned/tilted per keyframe
   scene.add(orbit);
@@ -331,29 +292,14 @@ export function createOrbitScene(canvas: HTMLCanvasElement, opts: { mobile: bool
   head.renderOrder = 5;
   orbit.add(glow, head);
 
-  // a small moon on a tilted circular orbit between the body and the ring
-  const moonPlane = new THREE.Group();
-  moonPlane.rotation.set(0.62, -0.25, 0);
-  const moonMat = new THREE.ShaderMaterial({
-    vertexShader: moonVert, fragmentShader: moonFrag,
-    uniforms: { uDark: { value: hex("#0B2A33") }, uLit: { value: hex("#1F8F86") }, uFade: { value: 1 } },  // muted: the craft stays the lightest thing
-    transparent: true,
-  });
-  const moon = new THREE.Mesh(new THREE.SphereGeometry(1.25, 24, 16), moonMat);
-  moon.renderOrder = 1;
-  moonPlane.add(moon);
-  orbit.add(moonPlane);
-  const MOON_R = 15.5;
-
   const courseCount = coursePts.length;
   let plot = 1;
 
   /* ── state ── */
   let progress = 0;
-  let clock = 0;          // seconds, drives the moon
   let w = 1, h = 1;
   let th = TH_FAR;
-  const keys = opts.mobile ? MOBILE : DESKTOP;
+  const keys = opts.mobile ? KEYS_MOBILE : KEYS_DESKTOP;
   const sKeys = keys.map((k) => sAt(k.th));
 
   function keyAt(p: number): Key {
@@ -381,10 +327,6 @@ export function createOrbitScene(canvas: HTMLCanvasElement, opts: { mobile: bool
     orbit.position.set((k.x - 0.5) * w / pxPerUnit, -(k.y - 0.5) * h / pxPerUnit, 0);
     orbit.rotation.set(k.tiltX, k.tiltY, k.rotZ);
     canvas.style.opacity = String(k.dim);
-
-    // the moon keeps its own time, nudged along by the scroll
-    const ma = clock * 0.35 + progress * 6;
-    moon.position.set(Math.cos(ma) * MOON_R, Math.sin(ma) * MOON_R, 0);
     orbit.updateMatrixWorld(true);
 
     // the craft
@@ -405,8 +347,6 @@ export function createOrbitScene(canvas: HTMLCanvasElement, opts: { mobile: bool
     bodyMat.uniforms.uResolve.value = resolve;
     courseMat.opacity = 0.14 * (1 - THREE.MathUtils.smoothstep(progress, 0.08, 0.3));
     glow.material.opacity = T.glowOp * (0.6 + 0.4 * resolve) + 0.15 * (1 - resolve);
-    moonMat.uniforms.uFade.value = 1 - THREE.MathUtils.smoothstep(progress, 0.9, 0.97);
-    moon.visible = moonMat.uniforms.uFade.value > 0.001;
     course.geometry.setDrawRange(0, Math.round(courseCount * plot));
 
     // the ring flashes as the craft crosses it, and opens where it punches out
@@ -440,20 +380,6 @@ export function createOrbitScene(canvas: HTMLCanvasElement, opts: { mobile: bool
     if (!raf) raf = requestAnimationFrame(() => { raf = 0; render(); });
   };
 
-  // the moon is the only thing that moves on its own: tick at ~30fps while it's
-  // visible and the tab is, otherwise stay fully on-demand
-  let last = performance.now();
-  let tickRaf = 0;
-  const tick = (now: number) => {
-    tickRaf = requestAnimationFrame(tick);
-    if (document.hidden || !moon.visible) { last = now; return; }
-    if (now - last < 33) return;
-    clock += Math.min(0.1, (now - last) / 1000);
-    last = now;
-    render();
-  };
-  tickRaf = requestAnimationFrame(tick);
-
   function resize() {
     w = canvas.clientWidth || window.innerWidth;
     h = canvas.clientHeight || window.innerHeight;
@@ -485,7 +411,6 @@ export function createOrbitScene(canvas: HTMLCanvasElement, opts: { mobile: bool
     resize,
     dispose() {
       cancelAnimationFrame(raf);
-      cancelAnimationFrame(tickRaf);
       scene.traverse((o) => {
         const m = o as THREE.Mesh;
         m.geometry?.dispose?.();

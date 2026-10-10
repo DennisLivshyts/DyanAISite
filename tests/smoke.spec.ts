@@ -212,9 +212,9 @@ test("launch: first visit plays it, hands off, then gets out of the way", async 
   await page.goto("/");
   await expect(page.locator("html")).toHaveClass(/launching/);
   await expect(page.locator("#launch")).toBeVisible();
-  // hard cap: gone within ~2.6s of navigation, plus the fade
-  await expect(page.locator("html")).not.toHaveClass(/launching/, { timeout: 4000 });
-  expect(Date.now() - t0).toBeLessThan(4500);
+  // hard cap: gone within ~3.5s of navigation, plus the fade
+  await expect(page.locator("html")).not.toHaveClass(/launching/, { timeout: 5000 });
+  expect(Date.now() - t0).toBeLessThan(5500);
   await expect(page.locator("#launch")).toBeHidden();
   // page scrolls again and the CTA is clickable
   expect(await page.evaluate(() => getComputedStyle(document.body).overflow)).not.toBe("hidden");

@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import Logo from "../Logo";
-import { FLIGHT } from "@/lib/orbit";
+import { FLIGHT, approachScreen } from "@/lib/orbit";
 import { flight } from "@/lib/flight";
 import type { OrbitScene } from "./scene";
 
@@ -28,7 +28,9 @@ gsap.registerPlugin(ScrollTrigger);
 
 type Mode = "pending" | "scene" | "static";
 
-const LAUNCH_CAP_MS = 2600;   // the inline <head> script removes the overlay at this point regardless
+const LAUNCH_CAP_MS = 3500;   // the inline <head> script removes the overlay at this point regardless
+const ASCENT_S = 1.0;
+const FADE_S = 0.45;
 
 function webglAvailable() {
   try {
@@ -150,7 +152,8 @@ export default function OrbitMount() {
       html.dataset.orbit = "static";
       resolveReady(null);
     } else if (launching) {
-      startScene();                       // the launch screen hides the load
+      // created as the launch screen fades, so shader compilation never
+      // competes with the climb (see finish below)
     } else {
       const w = window as Window & { requestIdleCallback?: (cb: () => void, o?: { timeout: number }) => number };
       if (w.requestIdleCallback) w.requestIdleCallback(startScene, { timeout: 1500 }); else window.setTimeout(startScene, 300);
@@ -172,6 +175,7 @@ export default function OrbitMount() {
       const craft = document.getElementById("launch-craft") as SVGCircleElement | null;
       const glowEl = document.getElementById("launch-glow") as SVGCircleElement | null;
       const label = document.getElementById("launch-label");
+      const pad = document.getElementById("launch-pad");
       const remaining = LAUNCH_CAP_MS - performance.now();
       let tl: gsap.core.Timeline | null = null;
       let done = false;
@@ -180,30 +184,36 @@ export default function OrbitMount() {
         if (done) return;
         done = true;
         tl?.kill();
+        if (!reduce && webglAvailable()) startScene();   // fades in under the overlay's fade-out
         if (root) gsap.to(root, { opacity: 0, duration: 0.45, ease: "power1.out", onComplete: endLaunch });
         else endLaunch();
         ready.then(plotIn);
       };
 
-      if (!root || !trail || !craft || !glowEl || !label || window.scrollY > 40 || remaining < 900) {
+      // Only skip when there's genuinely no time left for a climb; otherwise the
+      // ignition is already running (CSS) and the climb always gets to play.
+      if (!root || !trail || !craft || !glowEl || !label || window.scrollY > 40 || remaining < 700) {
         // too late, already scrolled, or no overlay: don't make anyone wait
         done = true;
         endLaunch();
+        if (!reduce && webglAvailable()) startScene();
         ready.then(plotIn);
       } else {
-        const ascent = remaining > 1700 ? 1.0 : 0.6;
         const W = window.innerWidth, H = window.innerHeight;
         const x0 = W / 2, y0 = H * 0.96;
-        tl = gsap.timeline();
-        tl.to(label, { opacity: 1, duration: 0.25 })
-          .fromTo(glowEl, { attr: { r: 2 } }, { attr: { r: 16 }, opacity: 0.35, duration: 0.3, ease: "power2.out" }, "<");
 
-        // the target is wherever the scene puts the craft at the top of the page
-        const timeout = new Promise<null>((r) => setTimeout(() => r(null), Math.max(0, Math.min(900, remaining - 900))));
-        Promise.race([ready, timeout]).then((scene) => {
-          if (cancelled || done || !tl) return;
-          scene?.setPlot(0);
-          const target = scene ? scene.headScreen() : { x: W * 0.2, y: H * 0.22 };
+        // Let the ignition read for a moment (it has been running in CSS since
+        // first paint), then climb — no waiting on three.js: the target is
+        // computed by hand from the same transform the scene uses.
+        const wait = Math.max(0, Math.min(700 - performance.now(), remaining - (ASCENT_S + FADE_S) * 1000 - 200));
+        setTimeout(() => {
+          if (cancelled || done) return;
+          // build the timeline now, not earlier: tweens added to a timeline that has
+          // been playing while we waited land "in the past" and skip ahead
+          tl = gsap.timeline();
+          const left = LAUNCH_CAP_MS - performance.now() - FADE_S * 1000 - 100;
+          const ascent = Math.max(0.5, Math.min(ASCENT_S, left / 1000));
+          const target = approachScreen(W, H, window.matchMedia("(max-width: 767px)").matches);
           // a gravity turn: straight up off the pad, bending over toward the target
           const d = `M ${x0} ${y0} C ${x0} ${H * 0.45}, ${target.x + (x0 - target.x) * 0.15} ${target.y + H * 0.22}, ${target.x} ${target.y}`;
           trail.setAttribute("d", d);
@@ -211,6 +221,11 @@ export default function OrbitMount() {
           trail.style.strokeDasharray = `${L}`;
           trail.style.strokeDashoffset = `${L}`;
           const p = { t: 0 };
+          // hand the label and pad over from their CSS animations (which would
+          // override any inline opacity) to the timeline
+          label.style.animation = "none";
+          label.style.opacity = "1";
+          if (pad) { pad.style.animation = "none"; pad.style.opacity = "0.4"; tl.to(pad, { opacity: 0, duration: 0.2 }, 0); }
           tl.to(p, {
             t: 1, duration: ascent, ease: "power2.in",
             onUpdate: () => {
@@ -222,10 +237,10 @@ export default function OrbitMount() {
               trail.style.strokeDashoffset = String(L * (1 - p.t));
             },
           })
-          .to(glowEl, { attr: { r: 7 }, opacity: 0.25, duration: ascent, ease: "power1.in" }, "<")
+          .to(glowEl, { attr: { r: 6 }, duration: ascent, ease: "power1.in" }, "<")
           .to(label, { opacity: 0, duration: 0.3 }, "<0.3")
           .add(finish);
-        });
+        }, wait);
       }
 
       const skip = () => finish();

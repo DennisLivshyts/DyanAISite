@@ -111,7 +111,14 @@ html.launching body { overflow: hidden; }
   color: #2DD4BF;
   opacity: 0;
   white-space: nowrap;
+  animation: launch-in 0.35s ease-out 0.1s forwards;
 }
+/* ignition, from the first paint: glow swells, the pad ring pulses until lift-off */
+#launch-glow { opacity: 0; transform-box: fill-box; transform-origin: center; animation: launch-ignite 0.5s ease-out 0.15s forwards; }
+#launch-pad { opacity: 0; transform-box: fill-box; transform-origin: center; animation: launch-pad 1.2s ease-out 0.2s infinite; }
+@keyframes launch-in { to { opacity: 1; } }
+@keyframes launch-ignite { from { opacity: 0; transform: scale(0.2); } to { opacity: 0.35; transform: scale(1); } }
+@keyframes launch-pad { from { opacity: 0.5; transform: scale(0.6); } to { opacity: 0; transform: scale(2.2); } }
 
 /* AnimatedMark: ring draws, body fades up, the flyby sweeps (accelerating), head lands */
 .animated-mark .am-ring { stroke-dasharray: 1; stroke-dashoffset: 1; animation: am-draw 0.7s cubic-bezier(0.4, 0, 0.2, 1) 0.05s forwards; }
