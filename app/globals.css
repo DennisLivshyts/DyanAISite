@@ -113,6 +113,11 @@ html.launching body { overflow: hidden; }
   white-space: nowrap;
   animation: launch-in 0.35s ease-out 0.1s forwards;
 }
+/* the pad: below the hand-off and to its left, so the gravity turn has room to
+   pitch over (≈ target.x − 0.45·climb; see OrbitMount) */
+#launch-origin { transform: translate(53vw, 96vh); }
+@media (max-width: 767px) { #launch-origin { transform: translate(26vw, 96vh); } }
+
 /* ignition, from the first paint: glow swells, the pad ring pulses until lift-off */
 #launch-glow { opacity: 0; transform-box: fill-box; transform-origin: center; animation: launch-ignite 0.5s ease-out 0.15s forwards; }
 #launch-pad { opacity: 0; transform-box: fill-box; transform-origin: center; animation: launch-pad 1.2s ease-out 0.2s infinite; }

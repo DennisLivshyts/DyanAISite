@@ -103,7 +103,7 @@ export const GEO = {
  * the same hyperbola so the craft arrives from off-screen.
  */
 
-export const RFAR = 3 * RSOI;
+export const RFAR = 2 * RSOI;   // close enough that the hero frame fits a real climb below it
 export const TH_FAR = Math.acos((P / RFAR - 1) / E);   // ≈ 2.19 rad
 
 /** Semi-major axis of the hyperbola (negative a convention avoided: a > 0 here). */
@@ -214,8 +214,11 @@ export function phaseAt(th: number): Phase {
 export type Key = { th: number; x: number; y: number; size: number; tiltX: number; tiltY: number; rotZ: number; dim: number };
 
 export const KEYS_DESKTOP: Key[] = [
-  { th: TH_FAR,     x: 0.70, y: 0.62, size: 0.30, tiltX: -1.00, tiltY: 0.30, rotZ: -1.20, dim: 1.00 }, // Hero: approach — craft starts in the open band above, between headline and panel
-  { th: TH_IN,      x: 0.90, y: 0.56, size: 0.24, tiltX: -0.70, tiltY: 0.22, rotZ: -0.30, dim: 0.35 }, // Capabilities: through the ring, in the margin
+  // Hero: the planet sits up and to the right; the craft hands off from the launch
+  // right of the headline at mid-height, travelling ~45° up-right toward it (a
+  // gravity turn's natural exit — see approachHeading and OrbitMount's launch)
+  { th: TH_FAR,     x: 0.64, y: 0.30, size: 0.22, tiltX: -1.00, tiltY: 0.30, rotZ: 1.25,  dim: 1.00 },
+  { th: TH_IN,      x: 0.90, y: 0.56, size: 0.24, tiltX: -0.70, tiltY: 0.22, rotZ: 0.60,  dim: 0.35 }, // Capabilities: through the ring, in the margin
   { th: 0,          x: 0.80, y: 0.30, size: 0.26, tiltX: -0.45, tiltY: 0.12, rotZ: 0.10, dim: 1.00 }, // Work: the whip, above the rail
   { th: TH_PROCESS, x: 0.78, y: 0.52, size: 0.32, tiltX: -0.25, tiltY: 0.06, rotZ: 0.06, dim: 0.95 }, // Process: climbing out
   { th: TH_CROSS,   x: 0.76, y: 0.40, size: 0.26, tiltX: -0.12, tiltY: 0.03, rotZ: 0.03, dim: 1.00 }, // Contact: the punch-through, beside the heading
@@ -223,8 +226,8 @@ export const KEYS_DESKTOP: Key[] = [
 ];
 
 export const KEYS_MOBILE: Key[] = [
-  { th: TH_FAR,     x: 0.66, y: 0.30, size: 0.40, tiltX: -1.00, tiltY: 0.25, rotZ: -1.55, dim: 0.90 }, // craft starts top-centre, on screen
-  { th: TH_IN,      x: 0.78, y: 0.20, size: 0.34, tiltX: -0.70, tiltY: 0.18, rotZ: 0.05, dim: 0.45 },
+  { th: TH_FAR,     x: 0.67, y: 0.34, size: 0.38, tiltX: -1.00, tiltY: 0.25, rotZ: 1.30,  dim: 0.90 }, // hand-off mid-screen, heading up-right
+  { th: TH_IN,      x: 0.78, y: 0.20, size: 0.34, tiltX: -0.70, tiltY: 0.18, rotZ: 0.60,  dim: 0.45 },
   { th: 0,          x: 0.72, y: 0.18, size: 0.36, tiltX: -0.45, tiltY: 0.10, rotZ: 0.08, dim: 0.80 },
   { th: TH_PROCESS, x: 0.76, y: 0.18, size: 0.32, tiltX: -0.25, tiltY: 0.05, rotZ: 0.05, dim: 0.45 },
   { th: TH_CROSS,   x: 0.74, y: 0.18, size: 0.32, tiltX: -0.12, tiltY: 0.03, rotZ: 0.03, dim: 0.60 },
@@ -239,12 +242,12 @@ export const CAMERA = { fov: 32, z: 400 };
  * the same transform the scene applies, done by hand so the launch screen can
  * aim for it without loading three.js. Keep in step with scene.ts render().
  */
-export function approachScreen(w: number, h: number, mobile: boolean): { x: number; y: number } {
+export function approachScreen(w: number, h: number, mobile: boolean, s = 0): { x: number; y: number } {
   const k = (mobile ? KEYS_MOBILE : KEYS_DESKTOP)[0];
   const tanH = Math.tan((CAMERA.fov * Math.PI) / 360);
   const pxPerUnit = h / (2 * CAMERA.z * tanH);
   const scale = (k.size * Math.min(w, h)) / pxPerUnit / (RSOI * S);
-  const [hx, hy] = world(thetaAt(0));
+  const [hx, hy] = world(thetaAt(s));
   // three's Euler "XYZ": R = Rx · Ry · Rz, applied to the scaled point
   let x = hx * scale, y = hy * scale, z = 0;
   const cz = Math.cos(k.rotZ), sz = Math.sin(k.rotZ);
@@ -259,6 +262,13 @@ export function approachScreen(w: number, h: number, mobile: boolean): { x: numb
   const ndcX = x / (depth * tanH * (w / h));
   const ndcY = y / (depth * tanH);
   return { x: (ndcX * 0.5 + 0.5) * w, y: (1 - (ndcY * 0.5 + 0.5)) * h };
+}
+
+/** Screen heading (radians, 0 = right, +y down) the craft is travelling at the start of the flight. */
+export function approachHeading(w: number, h: number, mobile: boolean): number {
+  const a = approachScreen(w, h, mobile, 0);
+  const b = approachScreen(w, h, mobile, 0.004);
+  return Math.atan2(b.y - a.y, b.x - a.x);
 }
 
 /**

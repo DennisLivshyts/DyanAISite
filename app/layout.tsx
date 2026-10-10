@@ -40,10 +40,13 @@ export default function RootLayout({
         <div id="launch" aria-hidden="true">
           <svg width="100%" height="100%">
             <path id="launch-trail" fill="none" stroke="#67E8F9" strokeOpacity="0.55" strokeWidth="2" strokeLinecap="round" />
-            {/* pad + ignition run in CSS from the first paint, so the screen is never idle while JS loads */}
-            <circle id="launch-pad" cx="50%" cy="96%" r="12" fill="none" stroke="#2DD4BF" strokeWidth="1" />
-            <circle id="launch-glow" cx="50%" cy="96%" r="9" fill="#67E8F9" />
-            <circle id="launch-craft" cx="50%" cy="96%" r="3.5" fill="#A5F3FC" />
+            {/* pad + ignition run in CSS from the first paint, so the screen is never idle while JS loads.
+                #launch-origin places the pad (globals.css); the climb starts from wherever it renders. */}
+            <g id="launch-origin">
+              <circle id="launch-pad" r="12" fill="none" stroke="#2DD4BF" strokeWidth="1" />
+              <circle id="launch-glow" r="9" fill="#67E8F9" />
+              <circle id="launch-craft" r="3.5" fill="#A5F3FC" />
+            </g>
           </svg>
           <div id="launch-label">T−0 · Launch</div>
         </div>

@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import Logo from "../Logo";
-import { FLIGHT, approachScreen } from "@/lib/orbit";
+import { FLIGHT, approachHeading, approachScreen } from "@/lib/orbit";
 import { flight } from "@/lib/flight";
 import type { OrbitScene } from "./scene";
 
@@ -203,7 +203,6 @@ export default function OrbitMount() {
         ready.then(plotIn);
       } else {
         const W = window.innerWidth, H = window.innerHeight;
-        const x0 = W / 2, y0 = H * 0.96;
 
         // Let the ignition read for a moment (it has been running in CSS since
         // first paint), then climb — no waiting on three.js: the target is
@@ -216,9 +215,23 @@ export default function OrbitMount() {
           tl = gsap.timeline();
           const left = LAUNCH_CAP_MS - performance.now() - FADE_S * 1000 - 100;
           const ascent = Math.max(0.5, Math.min(ASCENT_S, left / 1000));
-          const target = approachScreen(W, H, window.matchMedia("(max-width: 767px)").matches);
-          // a gravity turn: straight up off the pad, bending over toward the target
-          const d = `M ${x0} ${y0} C ${x0} ${H * 0.45}, ${target.x + (x0 - target.x) * 0.15} ${target.y + H * 0.22}, ${target.x} ${target.y}`;
+          const mobile = window.matchMedia("(max-width: 767px)").matches;
+          const target = approachScreen(W, H, mobile);
+          const heading = approachHeading(W, H, mobile);          // ~45° up-right
+          // A gravity turn: clear the pad vertically, then pitch over steadily
+          // until the craft is travelling exactly along the flight's own path.
+          // Always climbing, never turning back down, no kink at the hand-off.
+          // start exactly where the CSS put the pad, then take over positioning
+          const origin = document.getElementById("launch-origin");
+          const pr = (pad ?? craft).getBoundingClientRect();
+          const padX = pr.left + pr.width / 2;
+          const padY = pr.top + pr.height / 2;
+          origin?.style.setProperty("transform", "none");
+          for (const el of [craft, glowEl, pad]) { el?.setAttribute("cx", String(padX)); el?.setAttribute("cy", String(padY)); }
+          const dy = padY - target.y;
+          const [ux, uy] = [Math.cos(heading), Math.sin(heading)];
+          const b = dy * 0.4 / Math.max(0.3, -uy);                // back off along the heading
+          const d = `M ${padX} ${padY} C ${padX} ${padY - dy * 0.45}, ${target.x - ux * b} ${target.y - uy * b}, ${target.x} ${target.y}`;
           trail.setAttribute("d", d);
           const L = trail.getTotalLength();
           trail.style.strokeDasharray = `${L}`;
@@ -293,8 +306,8 @@ export default function OrbitMount() {
 
       {mode === "static" && (
         <div aria-hidden="true" data-orbit-static className="absolute inset-x-0 top-0 h-[100svh] pointer-events-none z-0 hidden md:block">
-          {/* same spot and size as the scene's approach frame: ring radius 30vmin */}
-          <div className="absolute" style={{ left: "70%", top: "60%", width: "calc(30vmin * 64 / 23)", transform: "translate(-50%, -50%)" }}>
+          {/* same spot and size as the scene's approach frame (KEYS_DESKTOP[0]): ring radius 22vmin */}
+          <div className="absolute" style={{ left: "64%", top: "30%", width: "calc(22vmin * 64 / 23)", transform: "translate(-50%, -50%)" }}>
             <Logo size={64} variant="primary" decorative className="w-full h-auto opacity-80" />
           </div>
         </div>
