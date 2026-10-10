@@ -74,7 +74,7 @@ export default function FlightTracker() {
   return (
     <nav
       aria-label="Flight path — jump to a section"
-      className="hidden xl:flex fixed right-5 top-1/2 -translate-y-1/2 z-40 flex-col items-center gap-3 select-none"
+      className="hidden min-[1440px]:flex fixed right-5 top-1/2 -translate-y-1/2 z-40 flex-col items-center gap-3 select-none"
     >
       <svg width={geo.W} height={geo.H} viewBox={`0 0 ${geo.W} ${geo.H}`} className="overflow-visible">
         <circle cx={geo.body[0]} cy={geo.body[1]} r={geo.rRing} fill="none" stroke="#2DD4BF" strokeOpacity="0.25" />

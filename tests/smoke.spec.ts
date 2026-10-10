@@ -246,13 +246,14 @@ test("launch: skipped for deep links and reduced motion", async ({ browser }) =>
 });
 
 test("flight readouts follow the scroll and the tracker jumps to sections", async ({ page, isMobile }) => {
+  if (!isMobile) await page.setViewportSize({ width: 1440, height: 900 });   // the tracker shows from 1440px
   await page.goto("/");
   const wide = !isMobile && (page.viewportSize()?.width ?? 0) >= 1024;
   if (wide) await expect(page.locator("#top").getByText("Approach")).toBeVisible();
   await page.locator("#work").scrollIntoViewIfNeeded();
   await page.evaluate(() => { const w = document.getElementById("work")!; window.scrollTo(0, w.offsetTop + w.offsetHeight / 2 - innerHeight / 2); });
   await page.waitForTimeout(1200);
-  if (!isMobile && (page.viewportSize()?.width ?? 0) >= 1280) {
+  if (!isMobile && (page.viewportSize()?.width ?? 0) >= 1440) {
     const tracker = page.getByRole("navigation", { name: /flight path/i });
     await expect(tracker.getByText(/periapsis|capture|exit/i)).toBeVisible();
     await tracker.getByRole("button", { name: "Go to Contact" }).click();

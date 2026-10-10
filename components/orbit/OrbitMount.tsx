@@ -217,10 +217,10 @@ export default function OrbitMount() {
           const ascent = Math.max(0.5, Math.min(ASCENT_S, left / 1000));
           const mobile = window.matchMedia("(max-width: 767px)").matches;
           const target = approachScreen(W, H, mobile);
-          const heading = approachHeading(W, H, mobile);          // ~45° up-right
-          // A gravity turn: clear the pad vertically, then pitch over steadily
-          // until the craft is travelling exactly along the flight's own path.
-          // Always climbing, never turning back down, no kink at the hand-off.
+          const heading = approachHeading(W, H, mobile);          // ~22° below level, toward the planet
+          // A launch arc: clear the pad vertically, pitch over through level near
+          // the top, then a short gentle descent that meets the flight exactly on
+          // its own heading — curving the whole way, no corners, no reversal.
           // start exactly where the CSS put the pad, then take over positioning
           const origin = document.getElementById("launch-origin");
           const pr = (pad ?? craft).getBoundingClientRect();
@@ -229,9 +229,12 @@ export default function OrbitMount() {
           origin?.style.setProperty("transform", "none");
           for (const el of [craft, glowEl, pad]) { el?.setAttribute("cx", String(padX)); el?.setAttribute("cy", String(padY)); }
           const dy = padY - target.y;
+          const dx = Math.max(1, target.x - padX);
           const [ux, uy] = [Math.cos(heading), Math.sin(heading)];
-          const b = dy * 0.4 / Math.max(0.3, -uy);                // back off along the heading
-          const d = `M ${padX} ${padY} C ${padX} ${padY - dy * 0.45}, ${target.x - ux * b} ${target.y - uy * b}, ${target.x} ${target.y}`;
+          // back off along the heading for the last control point, but never so far
+          // that the path would swing back left of where it has already been
+          const b = Math.min(dy * 0.3, (dx * 0.85) / Math.max(0.2, ux));
+          const d = `M ${padX} ${padY} C ${padX} ${padY - dy * 0.6}, ${target.x - ux * b} ${target.y - uy * b}, ${target.x} ${target.y}`;
           trail.setAttribute("d", d);
           const L = trail.getTotalLength();
           trail.style.strokeDasharray = `${L}`;
@@ -307,7 +310,7 @@ export default function OrbitMount() {
       {mode === "static" && (
         <div aria-hidden="true" data-orbit-static className="absolute inset-x-0 top-0 h-[100svh] pointer-events-none z-0 hidden md:block">
           {/* same spot and size as the scene's approach frame (KEYS_DESKTOP[0]): ring radius 22vmin */}
-          <div className="absolute" style={{ left: "64%", top: "30%", width: "calc(22vmin * 64 / 23)", transform: "translate(-50%, -50%)" }}>
+          <div className="absolute" style={{ left: "78%", top: "40%", width: "calc(22vmin * 64 / 23)", transform: "translate(-50%, -50%)" }}>
             <Logo size={64} variant="primary" decorative className="w-full h-auto opacity-80" />
           </div>
         </div>

@@ -88,7 +88,8 @@ export default function Hero() {
             </div>
 
             {/* RIGHT: Mission Status HUD */}
-            <div className="hidden lg:block">
+            {/* sits low, level with the CTAs: the planet owns the upper right of the hero */}
+            <div className="hidden lg:block lg:self-end lg:translate-y-6">
               <div
                 className="relative border border-teal-500/25 bg-navy-950/90 backdrop-blur-sm p-7"
                 style={{ clipPath: "polygon(0 0, calc(100% - 24px) 0, 100% 24px, 100% 100%, 0 100%)" }}
