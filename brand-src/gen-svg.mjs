@@ -1,59 +1,21 @@
 /**
  * DyanAI Labs — gravity assist mark.
  * Emits every variant as a standalone SVG in absolute 64-unit coordinates.
- *   node gen-brand.mjs <outDir>
+ *   node brand-src/gen-svg.mjs <outDir>
  */
 import { mkdirSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 
 const OUT = process.argv[2];
-if (!OUT) { console.error("usage: node gen-brand.mjs <outDir>"); process.exit(1); }
+if (!OUT) { console.error("usage: node brand-src/gen-svg.mjs <outDir>"); process.exit(1); }
 mkdirSync(OUT, { recursive: true });
 
-/* ---------------- orbital constants ---------------- */
-const P = 20;                       // semi-latus rectum
-const E = 1.15;                     // eccentricity — hyperbolic, so it escapes
-const PHI = (50 * Math.PI) / 180;   // periapsis bearing
-const RSOI = 20;                    // sphere of influence
-const ROUT = 25;                    // how far past the ring the exit runs
-const RBODY = 8;
-const S = 23 / RSOI;                // lands the ring at r23 inside a 64 frame
-const CX = 32, CY = 32;
+// The math is shared with components/Logo.tsx and the scroll scene. Node >= 22.18
+// imports the .ts directly (type stripping); older Node needs --experimental-strip-types.
+import { CX, CY, RBODY, RSOI, LIMB, CLEAR, S, TONES, TH_CROSS, hyp, ribbon, knockFor, headRFor, round as r2 } from "../lib/orbit.ts";
 
-const TH_IN = Math.acos((P / RSOI - 1) / E);
-const TH_OUT = -Math.acos((P / ROUT - 1) / E);
-const TH_CROSS = -TH_IN;
-
-const LIMB = RBODY * 0.62;          // terminator offset — a slim lit crescent
-const CLEAR = 1.5;                  // gap where the path crosses in front of the body
-
-const r2 = (n) => Number(n.toFixed(2));
-
-function hyp(th) {
-  const r = P / (1 + E * Math.cos(th));
-  return [CX + r * Math.cos(th + PHI) * S, CY + r * Math.sin(th + PHI) * S];
-}
-const frac = (th) => (TH_IN - th) / (TH_IN - TH_OUT);
-const width = (f, k) => (1.3 + 3.1 * Math.pow(f, 1.5)) * k * S;
-
-/** the flyby as one closed contour: out along +normal, back along -normal */
-function ribbon(k) {
-  const N = 90, pts = [], ws = [];
-  for (let i = 0; i <= N; i++) { pts.push(hyp(TH_IN + (TH_OUT - TH_IN) * i / N)); ws.push(width(i / N, k)); }
-  const nrm = (i) => {
-    const a = pts[Math.max(0, i - 1)], b = pts[Math.min(N, i + 1)];
-    const dx = b[0] - a[0], dy = b[1] - a[1], L = Math.hypot(dx, dy) || 1;
-    return [-dy / L, dx / L];
-  };
-  const side = (s) => pts.map((p, i) => {
-    const n = nrm(i), h = ws[i] / 2 * s;
-    return [r2(p[0] + n[0] * h), r2(p[1] + n[1] * h)];
-  });
-  return { d: "M" + side(1).concat(side(-1).reverse()).map((p, i) => (i ? "L" : "") + p[0] + " " + p[1]).join("") + "Z", head: pts[N] };
-}
-
-const BRIGHT = { g1:"#2DD4BF", g2:"#67E8F9", g3:"#A5F3FC", dark:"#0D3A45", limb:"#2DD4BF", ring:"#2DD4BF", ringOp:.45, glowOp:.2 };
-const DEEP   = { g1:"#0F766E", g2:"#0E7490", g3:"#0B4A5B", dark:"#CFE0E6", limb:"#0F766E", ring:"#0E7490", ringOp:.5,  glowOp:.12 };
+const BRIGHT = TONES.bright;
+const DEEP = TONES.deep;
 
 function build({ id, variant, pal, mono }) {
   const ring = variant === "primary";
@@ -61,9 +23,9 @@ function build({ id, variant, pal, mono }) {
   const k = compact ? 1.5 : 1;
   const { d, head } = ribbon(k);
   const cross = hyp(TH_CROSS);
-  const knock = r2(width(frac(TH_CROSS), k) / 2 + 1.4 * S);
+  const knock = knockFor(k);
   const rB = r2(RBODY * S), rS = r2(RSOI * S), off = r2(LIMB * S);
-  const headR = r2(2.3 * k * S);
+  const headR = headRFor(k);
   const defs = [], out = [];
 
   if (mono) {

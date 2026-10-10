@@ -9,100 +9,17 @@
  * focus at the body, so the bend near periapsis and the way the arms straighten
  * are both correct. Geometry is computed once at module load, not per render.
  *
- * Standalone assets in /public/brand are generated from this same math — if you
- * change a constant here, regenerate them so they don't drift.
+ * The math lives in lib/orbit.ts, shared with the brand generator and the scroll
+ * scene. Change a constant there, then regenerate /public/brand.
  */
+
+import { CX, CY, GEO, TONES, ribbon, round, headRFor, type Tone } from "@/lib/orbit";
 
 type Variant = "primary" | "core" | "compact";
-type Tone = "bright" | "deep";
-
-/* ---------------- orbital constants ---------------- */
-const P = 20;                      // semi-latus rectum
-const E = 1.15;                    // eccentricity — hyperbolic, so it escapes
-const PHI = (50 * Math.PI) / 180;  // periapsis bearing
-const RSOI = 20;                   // sphere of influence
-const ROUT = 25;                   // how far past the ring the exit runs
-const RBODY = 8;
-const S = 23 / RSOI;               // lands the ring at r23 inside a 64 frame
-const CX = 32;
-const CY = 32;
-
-const TH_IN = Math.acos((P / RSOI - 1) / E);
-const TH_OUT = -Math.acos((P / ROUT - 1) / E);
-const TH_CROSS = -TH_IN;           // where the exit crosses the ring
-
-const LIMB = RBODY * 0.62;         // terminator offset — a slim lit crescent
-const CLEAR = 1.5;                 // gap where the path crosses in front of the body
-
-const round = (n: number) => Number(n.toFixed(2));
-
-function hyp(th: number): [number, number] {
-  const r = P / (1 + E * Math.cos(th));
-  return [CX + r * Math.cos(th + PHI) * S, CY + r * Math.sin(th + PHI) * S];
-}
-const frac = (th: number) => (TH_IN - th) / (TH_IN - TH_OUT);
-const width = (f: number, k: number) => (1.3 + 3.1 * Math.pow(f, 1.5)) * k * S;
-
-/**
- * The flyby as a single closed contour: out along the +normal, back along the
- * -normal. It never crosses itself, so one contour is enough and it stays about
- * half the size of a stroked-quad approach.
- */
-function ribbon(k: number) {
-  const N = 90;
-  const pts: [number, number][] = [];
-  const ws: number[] = [];
-  for (let i = 0; i <= N; i++) {
-    pts.push(hyp(TH_IN + (TH_OUT - TH_IN) * (i / N)));
-    ws.push(width(i / N, k));
-  }
-  const normal = (i: number): [number, number] => {
-    const a = pts[Math.max(0, i - 1)];
-    const b = pts[Math.min(N, i + 1)];
-    const dx = b[0] - a[0];
-    const dy = b[1] - a[1];
-    const L = Math.hypot(dx, dy) || 1;
-    return [-dy / L, dx / L];
-  };
-  const side = (sign: number) =>
-    pts.map((p, i) => {
-      const [nx, ny] = normal(i);
-      const h = (ws[i] / 2) * sign;
-      return [round(p[0] + nx * h), round(p[1] + ny * h)] as [number, number];
-    });
-
-  const all = side(1).concat(side(-1).reverse());
-  return {
-    d: "M" + all.map((p, i) => (i ? "L" : "") + p[0] + " " + p[1]).join("") + "Z",
-    head: pts[N],
-  };
-}
 
 /* computed once at module load */
 const FULL = ribbon(1);
 const COMPACT = ribbon(1.5);
-const CROSS = hyp(TH_CROSS);
-const GEO = {
-  knock: round(width(frac(TH_CROSS), 1) / 2 + 1.4 * S),
-  knockCompact: round(width(frac(TH_CROSS), 1.5) / 2 + 1.4 * S),
-  rBody: round(RBODY * S),
-  rSoi: round(RSOI * S),
-  limb: round(LIMB * S),
-  clear: round(CLEAR * S),
-  ringW: round(1.5 * S),
-  glowR: round(4.4 * S),
-  crossX: round(CROSS[0]),
-  crossY: round(CROSS[1]),
-};
-
-const TONES: Record<Tone, {
-  g1: string; g2: string; g3: string;
-  dark: string; limb: string; ring: string;
-  ringOp: number; glowOp: number;
-}> = {
-  bright: { g1: "#2DD4BF", g2: "#67E8F9", g3: "#A5F3FC", dark: "#0D3A45", limb: "#2DD4BF", ring: "#2DD4BF", ringOp: 0.45, glowOp: 0.2 },
-  deep:   { g1: "#0F766E", g2: "#0E7490", g3: "#0B4A5B", dark: "#CFE0E6", limb: "#0F766E", ring: "#0E7490", ringOp: 0.5,  glowOp: 0.12 },
-};
 
 /**
  * Thresholds are set by eye, not by arithmetic: the crescent and the clearance
@@ -138,7 +55,7 @@ export default function Logo({
   const showRing = v === "primary";
   const compact = v === "compact";
   const { d, head } = compact ? COMPACT : FULL;
-  const headR = round(2.3 * (compact ? 1.5 : 1) * S);
+  const headR = headRFor(compact ? 1.5 : 1);
 
   /* Deterministic so this stays SSR-safe without useId, which would force the
      whole component to be a client component. Instances sharing variant+tone
