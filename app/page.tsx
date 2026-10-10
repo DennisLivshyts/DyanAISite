@@ -7,15 +7,16 @@ import WhyUs from "@/components/WhyUs";
 import Contact from "@/components/Contact";
 import Footer from "@/components/Footer";
 
-// Scroll order follows the flyby in the logo: approach (Hero) → capture (Work)
-// → periapsis (Capabilities) → exit (Process) → punch-through (Contact).
+// Scroll order follows the flyby in the logo: approach (Hero) → capture
+// (Capabilities) → periapsis, the closest pass, on the Work → exit (Process)
+// → punch-through (Contact).
 export default function Home() {
   return (
     <main className="min-h-screen bg-navy-900">
       <Nav />
       <Hero />
-      <Work />
       <Capabilities />
+      <Work />
       <HowItWorks />
       <WhyUs />
       <Contact />

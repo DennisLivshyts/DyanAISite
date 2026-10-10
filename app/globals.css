@@ -89,6 +89,24 @@
 .nebula-scroll::-webkit-scrollbar-thumb { background: rgba(20,184,166,0.3); border-radius: 2px; }
 .nebula-scroll::-webkit-scrollbar-thumb:hover { background: rgba(20,184,166,0.6); }
 
+/* Work rail: bleeds edge to edge, but its first card lines up with the page
+   column (max-w-6xl + px-6), and snapping respects the same inset. */
+.rail-pad {
+  padding-inline: 1rem;
+  scroll-padding-inline: 1rem;
+}
+@media (min-width: 640px) {
+  .rail-pad { padding-inline: 1.5rem; scroll-padding-inline: 1.5rem; }
+}
+@media (min-width: 1024px) {
+  .rail-pad {
+    padding-inline: max(1.5rem, calc((100% - 72rem) / 2 + 1.5rem));
+    scroll-padding-inline: max(1.5rem, calc((100% - 72rem) / 2 + 1.5rem));
+  }
+}
+.no-scrollbar { scrollbar-width: none; }
+.no-scrollbar::-webkit-scrollbar { display: none; }
+
 @layer utilities {
   .font-syne { font-family: "DM Sans", sans-serif; }
   .font-space-mono { font-family: "Space Mono", monospace; }

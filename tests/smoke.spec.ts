@@ -83,12 +83,12 @@ test("resume content is gone and the new sections are in nav order", async ({ pa
   }
   const ids = await page.locator("main > section[id]").evaluateAll((els) => els.map((e) => e.id));
   expect(ids.filter((id) => ["work", "capabilities", "process", "contact"].includes(id)))
-    .toEqual(["work", "capabilities", "process", "contact"]);
+    .toEqual(["capabilities", "work", "process", "contact"]);
 });
 
 test("nav links land on their sections", async ({ page, isMobile }) => {
   await page.goto("/");
-  for (const [label, id] of [["Work", "work"], ["Capabilities", "capabilities"], ["Process", "process"], ["Contact", "contact"]]) {
+  for (const [label, id] of [["Capabilities", "capabilities"], ["Work", "work"], ["Process", "process"], ["Contact", "contact"]]) {
     if (isMobile) await page.getByRole("button", { name: "Toggle menu" }).click();
     // phones use the dropdown under the header, desktop the inline nav: click whichever is visible
     await page.locator("header").getByRole("link", { name: label, exact: true }).filter({ visible: true }).click();
@@ -108,4 +108,58 @@ test("every case card renders, and outbound links are safe", async ({ page }) =>
     await img.scrollIntoViewIfNeeded();
     await expect.poll(() => img.evaluate((el: HTMLImageElement) => el.complete && el.naturalWidth > 0)).toBe(true);
   }
+});
+
+test("clicking a case card opens its dossier; Escape closes and returns focus", async ({ page }) => {
+  await page.goto("/");
+  const card = page.locator("#work [data-case]").first();
+  const name = (await card.locator("h3").innerText()).trim();
+  await card.scrollIntoViewIfNeeded();
+  await card.click();
+  const dialog = page.getByRole("dialog");
+  await expect(dialog).toBeVisible();
+  await expect(dialog.getByRole("heading", { name })).toBeVisible();
+  // step to the next case and back
+  await dialog.getByRole("button", { name: "Next case" }).click();
+  await expect(dialog.getByRole("heading", { name })).toBeHidden();
+  await dialog.getByRole("button", { name: "Previous case" }).click();
+  await expect(dialog.getByRole("heading", { name })).toBeVisible();
+  await page.keyboard.press("Escape");
+  await expect(dialog).toBeHidden();
+  await expect(card).toBeFocused();
+});
+
+test("dragging the rail scrolls it and does not open a card", async ({ page, isMobile }) => {
+  test.skip(isMobile, "touch uses native swipe");
+  await page.goto("/");
+  const rail = page.getByRole("region", { name: /case studies/i });
+  await rail.scrollIntoViewIfNeeded();
+  const box = (await rail.boundingBox())!;
+  const before = await rail.evaluate((el) => el.scrollLeft);
+  await page.mouse.move(box.x + box.width * 0.7, box.y + box.height * 0.4);
+  await page.mouse.down();
+  await page.mouse.move(box.x + box.width * 0.3, box.y + box.height * 0.4, { steps: 12 });
+  await page.mouse.up();
+  await page.waitForTimeout(600);
+  expect(await rail.evaluate((el) => el.scrollLeft)).toBeGreaterThan(before + 100);
+  await expect(page.getByRole("dialog")).toHaveCount(0);
+});
+
+test("arrow buttons step the rail", async ({ page }) => {
+  await page.goto("/");
+  const rail = page.getByRole("region", { name: /case studies/i });
+  await rail.scrollIntoViewIfNeeded();
+  await expect(page.getByRole("button", { name: "Scroll cases left" })).toBeDisabled();
+  await page.getByRole("button", { name: "Scroll cases right" }).click();
+  await expect.poll(() => rail.evaluate((el) => el.scrollLeft)).toBeGreaterThan(100);
+  await expect(page.getByRole("button", { name: "Scroll cases left" })).toBeEnabled();
+});
+
+test("a capability proof chip opens that case", async ({ page }) => {
+  await page.goto("/");
+  const chip = page.locator("#capabilities a[href^='#case-']").first();
+  const slug = (await chip.getAttribute("href"))!.replace("#case-", "");
+  const expected = (await page.locator(`#work [data-case='${slug}'] h3`).innerText()).trim();
+  await chip.click();
+  await expect(page.getByRole("dialog").getByRole("heading", { name: expected })).toBeVisible();
 });

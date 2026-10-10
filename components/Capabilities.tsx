@@ -45,7 +45,7 @@ export default function Capabilities() {
                       {proof.map((slug) => (
                         <a
                           key={slug}
-                          href={`#work`}
+                          href={`#case-${slug}`}
                           className="font-space-mono text-[10px] tracking-[0.15em] uppercase text-teal-500/80 border border-teal-500/25 px-3 py-1 hover:border-teal-400/60 hover:text-teal-300 transition-colors"
                         >
                           {shown.get(slug)}

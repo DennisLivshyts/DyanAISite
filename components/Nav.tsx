@@ -16,8 +16,8 @@ export default function Nav() {
   }, []);
 
   const links = [
-    { label: "Work", href: "#work" },
     { label: "Capabilities", href: "#capabilities" },
+    { label: "Work", href: "#work" },
     { label: "Process", href: "#process" },
     { label: "Contact", href: "#contact" },
   ];
