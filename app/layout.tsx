@@ -2,8 +2,6 @@ import type { Metadata } from "next";
 import "./globals.css";
 import MouseSpotlight from "@/components/MouseSpotlight";
 import SpaceBackground from "@/components/SpaceBackground";
-import OrbitMount from "@/components/orbit/OrbitMount";
-import FlightTracker from "@/components/orbit/FlightTracker";
 
 export const metadata: Metadata = {
   title: "DyanAI Labs — Business Integrations for a Modern Era",
@@ -29,11 +27,11 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning>
       <head>
         {/* Decide before first paint whether this visit gets the launch screen:
-            first visit this session, motion allowed, landing at the top, not a
-            review link. Hard cap: the overlay goes away by 2.6s no matter what. */}
+            first visit this session, motion allowed, landing on the home page
+            top, not a review link. Hard cap: the overlay goes away by 2.6s no matter what. */}
         <script
           dangerouslySetInnerHTML={{
-            __html: `(function(){try{var d=document.documentElement;if(sessionStorage.getItem('dl-launched'))return;if(matchMedia('(prefers-reduced-motion: reduce)').matches)return;if(location.hash||location.search.indexOf('orbit=')>-1)return;d.classList.add('launching');setTimeout(function(){d.classList.remove('launching');try{sessionStorage.setItem('dl-launched','1')}catch(e){}},2600)}catch(e){}})();`,
+            __html: `(function(){try{var d=document.documentElement;if(sessionStorage.getItem('dl-launched'))return;if(matchMedia('(prefers-reduced-motion: reduce)').matches)return;if(location.pathname!=='/'||location.hash||location.search.indexOf('orbit=')>-1)return;d.classList.add('launching');setTimeout(function(){d.classList.remove('launching');try{sessionStorage.setItem('dl-launched','1')}catch(e){}},2600)}catch(e){}})();`,
           }}
         />
       </head>
@@ -47,11 +45,8 @@ export default function RootLayout({
           </svg>
           <div id="launch-label">T−0 · Launch</div>
         </div>
-        {/* behind the content: stars, then the gravity-assist scene */}
         <SpaceBackground />
-        <OrbitMount />
         <MouseSpotlight />
-        <FlightTracker />
         {children}
       </body>
     </html>

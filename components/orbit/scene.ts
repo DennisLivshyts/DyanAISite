@@ -336,10 +336,10 @@ export function createOrbitScene(canvas: HTMLCanvasElement, opts: { mobile: bool
   moonPlane.rotation.set(0.62, -0.25, 0);
   const moonMat = new THREE.ShaderMaterial({
     vertexShader: moonVert, fragmentShader: moonFrag,
-    uniforms: { uDark: { value: hex("#0B2A33") }, uLit: { value: hex(T.g2) }, uFade: { value: 1 } },
+    uniforms: { uDark: { value: hex("#0B2A33") }, uLit: { value: hex("#1F8F86") }, uFade: { value: 1 } },  // muted: the craft stays the lightest thing
     transparent: true,
   });
-  const moon = new THREE.Mesh(new THREE.SphereGeometry(1.5, 24, 16), moonMat);
+  const moon = new THREE.Mesh(new THREE.SphereGeometry(1.25, 24, 16), moonMat);
   moon.renderOrder = 1;
   moonPlane.add(moon);
   orbit.add(moonPlane);

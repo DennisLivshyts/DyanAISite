@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef, useCallback } from "react";
+import AnimatedMark from "./AnimatedMark";
 
 // ── Date helpers ──────────────────────────────────────────────────────────────
 const MONTHS   = ["January","February","March","April","May","June","July","August","September","October","November","December"];
@@ -460,16 +461,10 @@ export default function BookingModal({ isOpen, onClose }: Props) {
           {/* ══ STEP 3: Success ══════════════════════════════════════════════ */}
           {step === 3 && selectedDate && selectedTime && (
             <div className="animate-fade-slide-up text-center py-4">
-              {/* Animated check */}
-              <div className="relative inline-flex items-center justify-center mb-6">
-                <div className="w-20 h-20 rounded-full border border-teal-500/30"
-                  style={{ animation:"nebula-drift-1 8s ease-in-out infinite", background:"radial-gradient(circle, rgba(20,184,166,0.15) 0%, transparent 70%)" }} />
-                <div className="absolute w-14 h-14 rounded-full bg-teal-500/20 border border-teal-400/50 flex items-center justify-center"
-                  style={{ boxShadow:"0 0 24px rgba(20,184,166,0.4)" }}>
-                  <svg className="w-7 h-7 text-teal-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                  </svg>
-                </div>
+              {/* the flight completes: the mark draws itself */}
+              <div className="relative inline-flex items-center justify-center mb-4">
+                <div className="absolute inset-0 rounded-full" style={{ background:"radial-gradient(circle, rgba(20,184,166,0.16) 0%, transparent 65%)" }} />
+                <AnimatedMark size={112} id="booked" className="relative" />
               </div>
 
               <h3 className="text-2xl font-bold text-white mb-2">Mission confirmed</h3>

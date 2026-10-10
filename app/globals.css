@@ -113,6 +113,19 @@ html.launching body { overflow: hidden; }
   white-space: nowrap;
 }
 
+/* AnimatedMark: ring draws, body fades up, the flyby sweeps (accelerating), head lands */
+.animated-mark .am-ring { stroke-dasharray: 1; stroke-dashoffset: 1; animation: am-draw 0.7s cubic-bezier(0.4, 0, 0.2, 1) 0.05s forwards; }
+.animated-mark .am-body { opacity: 0; transform-origin: 32px 32px; animation: am-body 0.5s ease-out 0.25s forwards; }
+.animated-mark .am-fly  { stroke-dasharray: 1; stroke-dashoffset: 1; animation: am-draw 0.85s cubic-bezier(0.55, 0, 0.9, 0.6) 0.55s forwards; }
+.animated-mark .am-head { opacity: 0; transform-box: fill-box; transform-origin: center; animation: am-land 0.35s cubic-bezier(0.2, 1.6, 0.4, 1) 1.35s forwards; }
+@keyframes am-draw { to { stroke-dashoffset: 0; } }
+@keyframes am-body { from { opacity: 0; transform: scale(0.85); } to { opacity: 1; transform: scale(1); } }
+@keyframes am-land { from { opacity: 0; transform: scale(0.3); } to { opacity: 1; transform: scale(1); } }
+@media (prefers-reduced-motion: reduce) {
+  .animated-mark .am-ring, .animated-mark .am-fly { animation: none; stroke-dashoffset: 0; }
+  .animated-mark .am-body, .animated-mark .am-head { animation: none; opacity: 1; }
+}
+
 /* the sign-off's static mark stands in only when the scene isn't running */
 html[data-orbit="scene"] .signoff-static { visibility: hidden; }
 

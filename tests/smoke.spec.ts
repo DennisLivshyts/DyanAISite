@@ -267,3 +267,14 @@ test("the page ends on the sign-off", async ({ page }) => {
   await page.getByRole("button", { name: /book a free consultation/i }).last().click();
   await expect(page.getByRole("heading", { name: "Schedule a Mission" })).toBeVisible();
 });
+
+test("unknown pages get the off-course 404, no launch, a way home", async ({ page }) => {
+  const res = await page.goto("/no-such-page");
+  expect(res?.status()).toBe(404);
+  await expect(page.locator("html")).not.toHaveClass(/launching/);
+  await expect(page.getByRole("heading", { name: /missed its burn/i })).toBeVisible();
+  await expect(page.locator("canvas[data-orbit-scene]")).toHaveCount(0);
+  await page.getByRole("link", { name: /plot a course home/i }).click();
+  await expect(page).toHaveURL(/\/$/);
+  await expect(page.locator("h1").first()).toContainText("You arrive with");
+});
