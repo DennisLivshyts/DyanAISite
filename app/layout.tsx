@@ -6,7 +6,7 @@ import SpaceBackground from "@/components/SpaceBackground";
 export const metadata: Metadata = {
   title: "DyanAI Labs — Business Integrations for a Modern Era",
   description:
-    "DyanAI Labs builds custom websites and deploys intelligent AI agents for marketing, outreach, and booking — so your business runs smarter, not harder.",
+    "DyanAI Labs builds websites, AI agents and data platforms for businesses that need to move, and stays with them after launch.",
   metadataBase: new URL("https://www.dyanailabs.com"),
   openGraph: {
     title: "DyanAI Labs",

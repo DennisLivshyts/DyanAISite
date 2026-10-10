@@ -37,7 +37,7 @@ export default function Contact() {
   return (
     <section
       id="contact"
-      className="relative py-32 px-6 bg-navy-950 overflow-hidden"
+      className="relative py-32 px-4 sm:px-6 bg-navy-950 overflow-hidden scroll-mt-20"
     >
       {/* Subtle grid */}
       <div
@@ -62,10 +62,10 @@ export default function Contact() {
             </span>
           </div>
           <h2 className="font-syne text-4xl md:text-5xl font-bold text-white leading-tight">
-            Ready to grow?
+            Ready to leave faster?
           </h2>
           <p className="text-gray-400 mt-4 text-lg max-w-lg leading-relaxed">
-            Book a free call or send a message — we'll figure out exactly what your business needs.
+            Book a free call or send a message, and we'll figure out exactly what your business needs.
           </p>
         </div>
 

@@ -3,26 +3,22 @@
 import { useState } from "react";
 import BookingModal from "./BookingModal";
 
-const TICKER = [
+const TICKER_ITEMS = [
   "Custom Websites",
-  "AI Booking Agents",
-  "Marketing Automation",
-  "Lead Generation",
-  "AI Outreach Pipelines",
-  "Business Integrations",
-  "Custom Websites",
-  "AI Booking Agents",
-  "Marketing Automation",
-  "Lead Generation",
-  "AI Outreach Pipelines",
-  "Business Integrations",
+  "3D & Motion",
+  "AI Agents",
+  "Data Platforms",
+  "Booking Systems",
 ];
+// Repeated so the marquee loops seamlessly at -50%.
+const TICKER = [...TICKER_ITEMS, ...TICKER_ITEMS, ...TICKER_ITEMS, ...TICKER_ITEMS];
 
+// Phase 3 binds PHASE (and adds velocity/range) to the scroll-driven flyby.
 const HUD_ROWS = [
+  { label: "Phase", value: "Approach" },
   { label: "Status", value: "Accepting Clients" },
-  { label: "Avg Delivery", value: "2–3 Weeks" },
   { label: "Location", value: "San Francisco, CA" },
-  { label: "Stack", value: "Next.js · AI · Node" },
+  { label: "Builds", value: "Sites · Agents · Data" },
 ];
 
 export default function Hero() {
@@ -33,7 +29,7 @@ export default function Hero() {
 
       {/* Main content */}
       <div className="relative z-10 flex-1 flex items-center">
-        <div className="max-w-7xl mx-auto px-6 w-full pt-32 pb-12">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 w-full pt-32 pb-12">
           <div className="grid lg:grid-cols-[1fr_280px] gap-20 items-center">
 
             {/* LEFT: Headline block */}
@@ -46,18 +42,17 @@ export default function Hero() {
                 </span>
               </div>
 
-              {/* Giant Syne headline */}
-              <h1 className="font-syne font-bold leading-none tracking-tight mb-10"
-                style={{ fontSize: "clamp(2.6rem, 5.5vw, 5rem)" }}>
-                <span className="block text-white">Your Business,</span>
-                <span className="block text-white">Intelligently</span>
-                <span className="block text-gradient" style={{ paddingBottom: '0.08em' }}>Integrated.</span>
+              {/* The logo's gravity assist, in words */}
+              <h1 className="font-syne font-bold leading-[1.02] tracking-tight mb-10"
+                style={{ fontSize: "clamp(2.5rem, 5.5vw, 5rem)" }}>
+                <span className="block text-white">You arrive with momentum.</span>
+                <span className="block text-white">We bend the course.</span>
+                <span className="block text-gradient" style={{ paddingBottom: '0.08em' }}>You leave faster.</span>
               </h1>
 
               <p className="text-gray-400 text-lg max-w-md leading-relaxed mb-12 font-light">
-                We build custom websites and deploy AI agents that handle your
-                marketing, outreach, and bookings — so you can focus on running
-                your business.
+                DyanAI Labs builds websites, AI agents and data platforms for
+                businesses that need to move, and stays in orbit after launch.
               </p>
 
               {/* CTAs */}
@@ -74,11 +69,11 @@ export default function Hero() {
                 </button>
 
                 <a
-                  href="#services"
+                  href="#work"
                   className="group font-space-mono text-[11px] tracking-[0.25em] uppercase text-gray-500 hover:text-teal-400 transition-colors flex items-center gap-3"
                 >
                   <span className="w-8 h-px bg-current group-hover:w-12 transition-all duration-300" />
-                  See What We Build
+                  See the Work
                 </a>
               </div>
             </div>
@@ -100,7 +95,7 @@ export default function Hero() {
                 {/* Header */}
                 <div className="flex items-center justify-between mb-6 pb-5 border-b border-white/8">
                   <span className="font-space-mono text-[10px] tracking-[0.3em] text-gray-500 uppercase">
-                    System Status
+                    Flight Status
                   </span>
                   <div className="flex items-center gap-1.5">
                     <span className="w-1.5 h-1.5 rounded-full bg-teal-400 animate-pulse" />

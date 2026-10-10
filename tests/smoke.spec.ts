@@ -74,3 +74,38 @@ test("robots.txt and sitemap.xml are served", async ({ request }) => {
   expect(sitemap.status()).toBe(200);
   expect(await sitemap.text()).toContain("https://www.dyanailabs.com");
 });
+
+test("resume content is gone and the new sections are in nav order", async ({ page }) => {
+  await page.goto("/");
+  const body = await page.locator("body").innerText();
+  for (const word of ["UCSF", "Dope Thoughts", "Azure Access", "CSULB", "ResumeHero", "NFT Minting", "2–3 weeks", "2–3 Weeks"]) {
+    expect(body, word).not.toContain(word);
+  }
+  const ids = await page.locator("main > section[id]").evaluateAll((els) => els.map((e) => e.id));
+  expect(ids.filter((id) => ["work", "capabilities", "process", "contact"].includes(id)))
+    .toEqual(["work", "capabilities", "process", "contact"]);
+});
+
+test("nav links land on their sections", async ({ page, isMobile }) => {
+  await page.goto("/");
+  for (const [label, id] of [["Work", "work"], ["Capabilities", "capabilities"], ["Process", "process"], ["Contact", "contact"]]) {
+    if (isMobile) await page.getByRole("button", { name: "Toggle menu" }).click();
+    // phones use the dropdown under the header, desktop the inline nav: click whichever is visible
+    await page.locator("header").getByRole("link", { name: label, exact: true }).filter({ visible: true }).click();
+    await expect(page.locator(`#${id}`)).toBeInViewport();
+  }
+});
+
+test("every case card renders, and outbound links are safe", async ({ page }) => {
+  await page.goto("/");
+  const cards = page.locator("[data-case]");
+  expect(await cards.count()).toBeGreaterThan(0);
+  for (const a of await page.locator('#work a[target="_blank"]').all()) {
+    expect(await a.getAttribute("rel")).toContain("noopener");
+  }
+  // screenshots actually load (not broken images)
+  for (const img of await page.locator("#work img").filter({ visible: true }).all()) {
+    await img.scrollIntoViewIfNeeded();
+    await expect.poll(() => img.evaluate((el: HTMLImageElement) => el.complete && el.naturalWidth > 0)).toBe(true);
+  }
+});

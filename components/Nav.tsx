@@ -16,9 +16,9 @@ export default function Nav() {
   }, []);
 
   const links = [
-    { label: "Services", href: "#services" },
-    { label: "How It Works", href: "#how-it-works" },
-    { label: "Why Us", href: "#why-us" },
+    { label: "Work", href: "#work" },
+    { label: "Capabilities", href: "#capabilities" },
+    { label: "Process", href: "#process" },
     { label: "Contact", href: "#contact" },
   ];
 
@@ -30,7 +30,7 @@ export default function Nav() {
           : "bg-transparent"
       }`}
     >
-      <nav className="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
+      <nav className="max-w-6xl mx-auto px-4 sm:px-6 py-4 flex items-center justify-between">
         {/* Logo */}
         <a href="#" className="flex items-center gap-3" aria-label="DyanAI Labs, home">
           <Logo size={44} decorative className="shrink-0" />
@@ -52,13 +52,6 @@ export default function Nav() {
               {l.label}
             </a>
           ))}
-          <a
-            href="#founder"
-            onClick={() => window.dispatchEvent(new CustomEvent("open-founder"))}
-            className="text-sm text-gray-300 hover:text-white transition-colors"
-          >
-            About
-          </a>
           <button
             onClick={() => setBookingOpen(true)}
             className="text-sm bg-teal-500 hover:bg-teal-400 text-navy-950 px-4 py-2 rounded-lg transition-colors font-medium"
@@ -96,13 +89,6 @@ export default function Nav() {
               {l.label}
             </a>
           ))}
-          <a
-            href="#founder"
-            onClick={() => { setMenuOpen(false); window.dispatchEvent(new CustomEvent("open-founder")); }}
-            className="text-gray-300 hover:text-white transition-colors py-2 border-b border-white/5"
-          >
-            About
-          </a>
           <button
             onClick={() => { setBookingOpen(true); setMenuOpen(false); }}
             className="mt-2 text-sm bg-teal-500 hover:bg-teal-400 text-navy-950 px-4 py-2.5 rounded-lg transition-colors font-medium text-center"

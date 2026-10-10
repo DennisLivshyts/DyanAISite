@@ -1,27 +1,31 @@
+// Named for the gravity assist in the logo: approach, the close pass, the exit.
 const steps = [
   {
     number: "01",
-    title: "Discovery Call",
+    phase: "Approach",
+    title: "Discovery call",
     description:
-      "We learn your business, your goals, and where you're losing time or revenue. No jargon, no sales pitch — just an honest conversation about what you actually need.",
+      "We learn your business, your goals, and where you're losing time or revenue. No jargon, no sales pitch, just an honest conversation about what you actually need.",
   },
   {
     number: "02",
-    title: "Build & Integrate",
+    phase: "Periapsis",
+    title: "Build & integrate",
     description:
-      "We design and build your website and/or AI agents, customized for your business. You'll see progress fast — most projects launch within weeks, not months.",
+      "We design and build your site, agents or data platform around how your business already runs. You get a working preview link from early on, not a big reveal at the end.",
   },
   {
     number: "03",
-    title: "Launch & Optimize",
+    phase: "Exit",
+    title: "Launch & stay in orbit",
     description:
-      "We go live, monitor performance, and tune your systems as you grow. You get a partner who stays engaged — not an agency that disappears after delivery.",
+      "We go live, watch how it performs, and tune it as you grow. You keep a partner who stays engaged, not an agency that disappears after delivery.",
   },
 ];
 
 export default function HowItWorks() {
   return (
-    <section id="how-it-works" className="py-28 px-6 bg-navy-950">
+    <section id="process" className="py-28 px-4 sm:px-6 bg-navy-950 scroll-mt-20">
       <div className="max-w-5xl mx-auto">
 
         {/* Header — left-aligned */}
@@ -65,6 +69,7 @@ export default function HowItWorks() {
 
                 {/* Content */}
                 <div className="pt-3 pb-2">
+                  <div className="font-space-mono text-[10px] tracking-[0.3em] uppercase text-teal-500/70 mb-2">{step.phase}</div>
                   <h3 className="font-syne text-xl md:text-2xl font-bold text-white mb-4 leading-tight">
                     {step.title}
                   </h3>

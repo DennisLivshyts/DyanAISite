@@ -1,38 +1,38 @@
 const primary = [
   {
-    title: "Built for Local Businesses",
+    title: "Built for small businesses",
     description:
-      "We specialize in businesses that serve real communities — not Fortune 500 enterprises. We understand your scale, your budget, and what actually moves the needle.",
+      "We work with businesses that serve real communities, not Fortune 500 enterprises. We understand your scale, your budget, and what actually moves the needle.",
   },
   {
-    title: "AI-Native from Day One",
+    title: "AI-native from day one",
     description:
-      "We don't bolt AI on as an afterthought. Every solution we build is designed around intelligent automation — so your systems work harder as your business grows.",
+      "We don't bolt AI on as an afterthought. We design around automation where it earns its keep, and leave it out where it doesn't.",
   },
 ];
 
 const secondary = [
   {
-    title: "No Bloat. No BS.",
-    description: "No retainer contracts for features you don't need. We scope what matters, build fast, and stay lean.",
+    title: "Scoped, not padded",
+    description: "No retainer for features you don't need. We scope what matters and build that.",
   },
   {
-    title: "You Own Everything",
-    description: "Your website, your agents, your data. Full ownership and documentation — no lock-in.",
+    title: "You own everything",
+    description: "Your code, your domain, your data. We document it and hand over the keys whenever you want them.",
   },
   {
-    title: "Fast Delivery",
-    description: "Most websites launch in 2–3 weeks. AI agents deployed in under a month.",
+    title: "Previews as we go",
+    description: "Every change lands on a private preview link first, so you see real progress, not status updates.",
   },
   {
-    title: "Ongoing Partnership",
-    description: "We're available after launch. As your business evolves, we evolve with you.",
+    title: "Still here after launch",
+    description: "As your business changes, the site and the systems behind it change with it.",
   },
 ];
 
 export default function WhyUs() {
   return (
-    <section id="why-us" className="py-28 px-6">
+    <section id="why-us" className="py-28 px-4 sm:px-6">
       <div className="max-w-6xl mx-auto">
 
         {/* Header — left-aligned */}
