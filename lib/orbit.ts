@@ -97,6 +97,104 @@ export const GEO = {
   crossY: round(CROSS[1]),
 };
 
+/* ---------------- the flight (scroll scene) ----------------
+ * The mark only shows the flyby from the ring inward (TH_IN) to the exit
+ * (TH_OUT). The scroll scene flies the whole thing, starting further out on
+ * the same hyperbola so the craft arrives from off-screen.
+ */
+
+export const RFAR = 3 * RSOI;
+export const TH_FAR = Math.acos((P / RFAR - 1) / E);   // ≈ 2.19 rad
+
+/** Semi-major axis of the hyperbola (negative a convention avoided: a > 0 here). */
+const A = P / (E * E - 1);
+
+/** Orbital speed at true anomaly th, normalised so the inbound ring crossing is 1.00. */
+export function speed(th: number): number {
+  const r = (t: number) => P / (1 + E * Math.cos(t));
+  const v = (t: number) => Math.sqrt(2 / r(t) + 1 / A);  // vis-viva for a hyperbola, μ = 1
+  return v(th) / v(TH_IN);
+}
+
+/** Distance from the body, in ring radii (1 = on the ring). */
+export const range = (th: number) => P / (1 + E * Math.cos(th)) / RSOI;
+
+/**
+ * Point on the flight in 3D world units: body at the origin, y up (SVG is y
+ * down), the orbital plane is z = 0. Same scale as the 64-unit mark.
+ */
+export function world(th: number): [number, number] {
+  const [x, y] = hyp(th);
+  return [x - CX, -(y - CY)];
+}
+
+/**
+ * Scroll progress u ∈ [0,1] → true anomaly, TH_FAR → TH_OUT.
+ *
+ * Pure time (Kepler) whips past periapsis too fast for a section to sit on;
+ * pure arc length loses the acceleration that makes it a gravity assist. A
+ * 50/50 blend keeps both. Built once as a lookup table, inverted by search.
+ */
+export const thetaAt = (() => {
+  const N = 1024;
+  const ths: number[] = [];
+  const time: number[] = [];
+  const arc: number[] = [];
+  // hyperbolic mean anomaly M = e·sinh(H) − H, with tanh(H/2) = sqrt((e−1)/(e+1))·tan(θ/2)
+  const M = (th: number) => {
+    const H = 2 * Math.atanh(Math.sqrt((E - 1) / (E + 1)) * Math.tan(th / 2));
+    return E * Math.sinh(H) - H;
+  };
+  let s = 0;
+  let prev = world(TH_FAR);
+  for (let i = 0; i <= N; i++) {
+    const th = TH_FAR + (TH_OUT - TH_FAR) * (i / N);
+    const p = world(th);
+    s += Math.hypot(p[0] - prev[0], p[1] - prev[1]);
+    prev = p;
+    ths.push(th);
+    time.push(-M(th));   // θ decreases along the flight, so −M increases
+    arc.push(s);
+  }
+  const norm = (a: number[]) => a.map((v) => (v - a[0]) / (a[N] - a[0]));
+  const t = norm(time);
+  const l = norm(arc);
+  const blend = t.map((v, i) => 0.5 * v + 0.5 * l[i]);
+  return (u: number) => {
+    const x = Math.min(1, Math.max(0, u));
+    let lo = 0, hi = N;
+    while (hi - lo > 1) {
+      const mid = (lo + hi) >> 1;
+      if (blend[mid] < x) lo = mid; else hi = mid;
+    }
+    const f = (x - blend[lo]) / (blend[hi] - blend[lo] || 1);
+    return ths[lo] + (ths[hi] - ths[lo]) * f;
+  };
+})();
+
+/**
+ * The mark's gradient runs across the ribbon's bounding box (SVG
+ * objectBoundingBox, x1 .06 y1 .04 → x2 .94 y2 .96). gradT gives the same
+ * 0..1 coordinate for any world point, so the 3D ribbon can reproduce it.
+ */
+export const gradT = (() => {
+  const xs: number[] = [];
+  const ys: number[] = [];
+  const { d } = ribbon(1);
+  for (const m of Array.from(d.matchAll(/[ML]([-\d.]+) ([-\d.]+)/g))) {
+    xs.push(+m[1]);
+    ys.push(+m[2]);
+  }
+  const x0 = Math.min(...xs), x1 = Math.max(...xs);
+  const y0 = Math.min(...ys), y1 = Math.max(...ys);
+  const gx = 0.94 - 0.06, gy = 0.96 - 0.04;
+  return (wx: number, wy: number) => {
+    const u = (wx + CX - x0) / (x1 - x0);       // back to SVG coords, then bbox-normalised
+    const v = (-wy + CY - y0) / (y1 - y0);
+    return ((u - 0.06) * gx + (v - 0.04) * gy) / (gx * gx + gy * gy);
+  };
+})();
+
 export type Tone = "bright" | "deep";
 export type Palette = {
   g1: string; g2: string; g3: string;

@@ -163,3 +163,37 @@ test("a capability proof chip opens that case", async ({ page }) => {
   await chip.click();
   await expect(page.getByRole("dialog").getByRole("heading", { name: expected })).toBeVisible();
 });
+
+test("the orbit scene mounts after load, behind the content", async ({ page }) => {
+  await page.goto("/");
+  const canvas = page.locator("canvas[data-orbit-scene='scene']");
+  await expect(canvas).toBeAttached({ timeout: 15_000 });
+  expect(await canvas.getAttribute("aria-hidden")).toBe("true");
+  expect(await canvas.evaluate((el) => getComputedStyle(el).pointerEvents)).toBe("none");
+  // the headline is still the first thing painted, and still clickable content sits above the canvas
+  const ctaOnTop = await page.evaluate(() => {
+    const b = [...document.querySelectorAll("button")].find((x) => /book a free consultation/i.test(x.textContent || ""))!;
+    const r = b.getBoundingClientRect();
+    return document.elementFromPoint(r.x + r.width / 2, r.y + r.height / 2)?.closest("button") === b;
+  });
+  expect(ctaOnTop).toBe(true);
+});
+
+test("reduced motion gets the static mark, no WebGL", async ({ browser }) => {
+  const ctx = await browser.newContext({ reducedMotion: "reduce" });
+  const page = await ctx.newPage();
+  await page.goto("/");
+  await expect(page.locator("[data-orbit-static]")).toBeAttached();
+  await page.waitForTimeout(1500);
+  await expect(page.locator("canvas[data-orbit-scene]")).toHaveCount(0);
+  await ctx.close();
+});
+
+test("three.js is not part of the initial page load", async ({ page }) => {
+  const early: string[] = [];
+  page.on("response", (r) => { if (r.url().includes("/_next/static/chunks/")) early.push(r.url()); });
+  await page.goto("/", { waitUntil: "domcontentloaded" });
+  const initial = [...early];
+  const sources = await Promise.all(initial.map((u) => page.request.get(u).then((r) => r.text())));
+  expect(sources.some((s) => s.includes("WebGLRenderer"))).toBe(false);
+});

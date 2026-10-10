@@ -25,7 +25,7 @@ const steps = [
 
 export default function HowItWorks() {
   return (
-    <section id="process" className="py-28 px-4 sm:px-6 bg-navy-950 scroll-mt-20">
+    <section id="process" className="py-28 px-4 sm:px-6 bg-navy-950/60 scroll-mt-20">
       <div className="max-w-5xl mx-auto">
 
         {/* Header — left-aligned */}

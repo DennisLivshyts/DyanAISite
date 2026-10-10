@@ -12,7 +12,7 @@ import Footer from "@/components/Footer";
 // → punch-through (Contact).
 export default function Home() {
   return (
-    <main className="min-h-screen bg-navy-900">
+    <main className="relative z-[1] min-h-screen">
       <Nav />
       <Hero />
       <Capabilities />

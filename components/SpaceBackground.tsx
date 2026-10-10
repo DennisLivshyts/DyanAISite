@@ -106,7 +106,7 @@ export default function SpaceBackground() {
   }, []);
 
   return (
-    <div className="fixed inset-0 z-[30] pointer-events-none overflow-hidden" aria-hidden="true">
+    <div className="fixed inset-0 z-0 pointer-events-none overflow-hidden" aria-hidden="true">
 
       {/* ── Far star layer (slower parallax) ── */}
       <div ref={farRef} className="absolute inset-0">

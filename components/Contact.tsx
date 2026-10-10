@@ -37,7 +37,7 @@ export default function Contact() {
   return (
     <section
       id="contact"
-      className="relative py-32 px-4 sm:px-6 bg-navy-950 overflow-hidden scroll-mt-20"
+      className="relative py-32 px-4 sm:px-6 bg-navy-950/60 overflow-hidden scroll-mt-20"
     >
       {/* Subtle grid */}
       <div

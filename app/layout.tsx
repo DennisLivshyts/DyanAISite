@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 import MouseSpotlight from "@/components/MouseSpotlight";
 import SpaceBackground from "@/components/SpaceBackground";
+import OrbitMount from "@/components/orbit/OrbitMount";
 
 export const metadata: Metadata = {
   title: "DyanAI Labs — Business Integrations for a Modern Era",
@@ -25,7 +26,9 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className="antialiased">
+        {/* behind the content: stars, then the gravity-assist scene */}
         <SpaceBackground />
+        <OrbitMount />
         <MouseSpotlight />
         {children}
       </body>
