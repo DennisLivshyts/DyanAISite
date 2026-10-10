@@ -291,3 +291,11 @@ test("launch: a background tab skips it and still gets the scene", async ({ page
   await expect(page.locator("html")).not.toHaveClass(/launching/, { timeout: 2000 });
   await expect(page.locator("canvas[data-orbit-scene='scene']")).toBeAttached({ timeout: 8000 });
 });
+
+test("launch: ?launch replays it even after it has been seen", async ({ page }) => {
+  await page.goto("/");
+  await expect(page.locator("html")).not.toHaveClass(/launching/, { timeout: 5000 });
+  await page.goto("/?launch");
+  await expect(page.locator("html")).toHaveClass(/launching/);
+  await expect(page.locator("#launch")).toBeVisible();
+});

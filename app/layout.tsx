@@ -28,10 +28,11 @@ export default function RootLayout({
       <head>
         {/* Decide before first paint whether this visit gets the launch screen:
             first visit this session, motion allowed, landing on the home page
-            top, not a review link. Hard cap: the overlay goes away by 3.5s no matter what. */}
+            top, not a review link. Hard cap: the overlay goes away by 3.5s no matter what.
+            ?launch forces it (for reviewing) even if this tab has already seen it. */}
         <script
           dangerouslySetInnerHTML={{
-            __html: `(function(){try{var d=document.documentElement;if(sessionStorage.getItem('dl-launched'))return;if(matchMedia('(prefers-reduced-motion: reduce)').matches)return;if(location.pathname!=='/'||location.hash||location.search.indexOf('orbit=')>-1)return;d.classList.add('launching');setTimeout(function(){d.classList.remove('launching');try{sessionStorage.setItem('dl-launched','1')}catch(e){}},3500)}catch(e){}})();`,
+            __html: `(function(){try{var d=document.documentElement;var force=/[?&]launch(=|&|$)/.test(location.search);if(!force&&sessionStorage.getItem('dl-launched'))return;if(matchMedia('(prefers-reduced-motion: reduce)').matches)return;if(location.pathname!=='/'||location.hash||location.search.indexOf('orbit=')>-1)return;d.classList.add('launching');setTimeout(function(){d.classList.remove('launching');try{sessionStorage.setItem('dl-launched','1')}catch(e){}},3500)}catch(e){}})();`,
           }}
         />
       </head>
