@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { flight } from "@/lib/flight";
 import BookingModal from "./BookingModal";
 
 const TICKER_ITEMS = [
@@ -13,19 +14,27 @@ const TICKER_ITEMS = [
 // Repeated so the marquee loops seamlessly at -50%.
 const TICKER = [...TICKER_ITEMS, ...TICKER_ITEMS, ...TICKER_ITEMS, ...TICKER_ITEMS];
 
-// Phase 3 binds PHASE (and adds velocity/range) to the scroll-driven flyby.
-const HUD_ROWS = [
-  { label: "Phase", value: "Approach" },
+// Phase and velocity are live: read from the flight as the page scrolls.
+const HUD_ROWS: { label: string; value: string; live?: "phase" | "velocity" }[] = [
+  { label: "Phase", value: "Approach", live: "phase" },
+  { label: "Velocity", value: "0.65 ×", live: "velocity" },
   { label: "Status", value: "Accepting Clients" },
   { label: "Location", value: "San Francisco, CA" },
-  { label: "Builds", value: "Sites · Agents · Data" },
 ];
 
 export default function Hero() {
   const [bookingOpen, setBookingOpen] = useState(false);
+  const phaseRef = useRef<HTMLDivElement>(null);
+  const velRef = useRef<HTMLDivElement>(null);
+
+  // write straight to the DOM: scrolling never re-renders the hero
+  useEffect(() => flight.subscribe((f) => {
+    if (phaseRef.current) phaseRef.current.textContent = f.phase;
+    if (velRef.current) velRef.current.textContent = `${f.velocity.toFixed(2)} ×`;
+  }), []);
 
   return (
-    <section className="relative min-h-screen flex flex-col overflow-hidden">
+    <section id="top" className="relative min-h-screen flex flex-col overflow-hidden">
 
       {/* Main content */}
       <div className="relative z-10 flex-1 flex items-center">
@@ -110,7 +119,10 @@ export default function Hero() {
                       <div className="font-space-mono text-[9px] tracking-[0.28em] text-gray-600 uppercase mb-1">
                         {row.label}
                       </div>
-                      <div className="font-space-mono text-sm text-white">
+                      <div
+                        ref={row.live === "phase" ? phaseRef : row.live === "velocity" ? velRef : undefined}
+                        className={`font-space-mono text-sm ${row.live ? "text-teal-300 tabular-nums" : "text-white"}`}
+                      >
                         {row.value}
                       </div>
                     </div>

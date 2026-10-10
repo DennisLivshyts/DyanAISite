@@ -172,6 +172,39 @@ export const thetaAt = (() => {
   };
 })();
 
+/** Inverse of thetaAt: flight position (0..1) at true anomaly th. */
+export function flightAt(th: number): number {
+  let lo = 0, hi = 1;
+  for (let i = 0; i < 40; i++) {
+    const mid = (lo + hi) / 2;
+    if (thetaAt(mid) > th) lo = mid; else hi = mid;   // thetaAt decreases along the flight
+  }
+  return (lo + hi) / 2;
+}
+
+/** True anomaly where the flight is called "periapsis" rather than capture/exit. */
+const PERI_BAND = 0.35;
+export const TH_PROCESS = -0.8;   // mid-exit, where the Process section sits
+
+/** Flight position of each phase anchor — the page pins sections to these. */
+export const FLIGHT = {
+  approach: 0,
+  ringIn: flightAt(TH_IN),
+  periapsis: flightAt(0),
+  process: flightAt(TH_PROCESS),
+  ringOut: flightAt(TH_CROSS),
+  resolve: 1,
+};
+
+export type Phase = "Approach" | "Capture" | "Periapsis" | "Exit" | "Escape";
+export function phaseAt(th: number): Phase {
+  if (th > TH_IN) return "Approach";
+  if (th > PERI_BAND) return "Capture";
+  if (th > -PERI_BAND) return "Periapsis";
+  if (th > TH_CROSS) return "Exit";
+  return "Escape";
+}
+
 /**
  * The mark's gradient runs across the ribbon's bounding box (SVG
  * objectBoundingBox, x1 .06 y1 .04 → x2 .94 y2 .96). gradT gives the same

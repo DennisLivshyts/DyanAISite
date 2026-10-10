@@ -53,8 +53,8 @@ export default function Contact() {
       <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-[700px] h-[400px] bg-teal-600/15 blur-[100px] rounded-full pointer-events-none" />
 
       <div className="relative z-10 max-w-6xl mx-auto">
-        {/* Header */}
-        <div className="mb-16">
+        {/* Header — the craft punches out of the ring as this reaches mid-screen */}
+        <div className="mb-16" data-punch>
           <div className="flex items-center gap-4 mb-6">
             <div className="h-px w-10 bg-teal-400" />
             <span className="font-space-mono text-[11px] tracking-[0.35em] text-teal-400 uppercase">

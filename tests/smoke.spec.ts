@@ -3,6 +3,14 @@ import { test, expect, type Page } from "@playwright/test";
 // Every request here is either a page load or an API call the server rejects, so
 // running this against production books nothing and sends no email.
 
+// Most tests are about the page, not the launch screen: mark it as already seen.
+// The launch has its own tests below, which start from a fresh session.
+test.beforeEach(async ({ page }, info) => {
+  if (!info.title.startsWith("launch")) {
+    await page.addInitScript(() => { try { sessionStorage.setItem("dl-launched", "1"); } catch {} });
+  }
+});
+
 async function collectErrors(page: Page) {
   const errors: string[] = [];
   page.on("pageerror", (e) => errors.push(e.message));
@@ -168,11 +176,11 @@ test("the orbit scene mounts after load, behind the content", async ({ page }) =
   await page.goto("/");
   const canvas = page.locator("canvas[data-orbit-scene='scene']");
   await expect(canvas).toBeAttached({ timeout: 15_000 });
-  expect(await canvas.getAttribute("aria-hidden")).toBe("true");
-  expect(await canvas.evaluate((el) => getComputedStyle(el).pointerEvents)).toBe("none");
+  expect(await canvas.evaluate((el) => el.closest("[aria-hidden='true']") !== null)).toBe(true);
+  expect(await canvas.evaluate((el) => getComputedStyle(el.parentElement!).pointerEvents)).toBe("none");
   // the headline is still the first thing painted, and still clickable content sits above the canvas
   const ctaOnTop = await page.evaluate(() => {
-    const b = [...document.querySelectorAll("button")].find((x) => /book a free consultation/i.test(x.textContent || ""))!;
+    const b = Array.from(document.querySelectorAll("button")).find((x) => /book a free consultation/i.test(x.textContent || ""))!;
     const r = b.getBoundingClientRect();
     return document.elementFromPoint(r.x + r.width / 2, r.y + r.height / 2)?.closest("button") === b;
   });
@@ -196,4 +204,66 @@ test("three.js is not part of the initial page load", async ({ page }) => {
   const initial = [...early];
   const sources = await Promise.all(initial.map((u) => page.request.get(u).then((r) => r.text())));
   expect(sources.some((s) => s.includes("WebGLRenderer"))).toBe(false);
+});
+
+test("launch: first visit plays it, hands off, then gets out of the way", async ({ page }) => {
+  const errors = await collectErrors(page);
+  const t0 = Date.now();
+  await page.goto("/");
+  await expect(page.locator("html")).toHaveClass(/launching/);
+  await expect(page.locator("#launch")).toBeVisible();
+  // hard cap: gone within ~2.6s of navigation, plus the fade
+  await expect(page.locator("html")).not.toHaveClass(/launching/, { timeout: 4000 });
+  expect(Date.now() - t0).toBeLessThan(4500);
+  await expect(page.locator("#launch")).toBeHidden();
+  // page scrolls again and the CTA is clickable
+  expect(await page.evaluate(() => getComputedStyle(document.body).overflow)).not.toBe("hidden");
+  await page.getByRole("button", { name: /book a free consultation/i }).first().click();
+  await expect(page.getByRole("heading", { name: "Schedule a Mission" })).toBeVisible();
+  // second load in the same session: no launch
+  await page.reload();
+  await expect(page.locator("html")).not.toHaveClass(/launching/);
+  expect(errors).toEqual([]);
+});
+
+test("launch: a click skips it", async ({ page }) => {
+  await page.goto("/");
+  await expect(page.locator("html")).toHaveClass(/launching/);
+  await page.mouse.click(10, 10);
+  await expect(page.locator("html")).not.toHaveClass(/launching/, { timeout: 1500 });
+});
+
+test("launch: skipped for deep links and reduced motion", async ({ browser }) => {
+  const a = await browser.newPage();
+  await a.goto("/#work");
+  await expect(a.locator("html")).not.toHaveClass(/launching/);
+  await a.close();
+  const ctx = await browser.newContext({ reducedMotion: "reduce" });
+  const b = await ctx.newPage();
+  await b.goto("/");
+  await expect(b.locator("html")).not.toHaveClass(/launching/);
+  await ctx.close();
+});
+
+test("flight readouts follow the scroll and the tracker jumps to sections", async ({ page, isMobile }) => {
+  await page.goto("/");
+  const wide = !isMobile && (page.viewportSize()?.width ?? 0) >= 1024;
+  if (wide) await expect(page.locator("#top").getByText("Approach")).toBeVisible();
+  await page.locator("#work").scrollIntoViewIfNeeded();
+  await page.evaluate(() => { const w = document.getElementById("work")!; window.scrollTo(0, w.offsetTop + w.offsetHeight / 2 - innerHeight / 2); });
+  await page.waitForTimeout(1200);
+  if (!isMobile && (page.viewportSize()?.width ?? 0) >= 1280) {
+    const tracker = page.getByRole("navigation", { name: /flight path/i });
+    await expect(tracker.getByText(/periapsis|capture|exit/i)).toBeVisible();
+    await tracker.getByRole("button", { name: "Go to Contact" }).click();
+    await expect(page.locator("#contact")).toBeInViewport({ timeout: 4000 });
+  }
+});
+
+test("the page ends on the sign-off", async ({ page }) => {
+  await page.goto("/");
+  await page.evaluate(() => window.scrollTo(0, document.documentElement.scrollHeight));
+  await expect(page.getByText("Escape velocity reached")).toBeInViewport();
+  await page.getByRole("button", { name: /book a free consultation/i }).last().click();
+  await expect(page.getByRole("heading", { name: "Schedule a Mission" })).toBeVisible();
 });

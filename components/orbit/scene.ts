@@ -13,8 +13,8 @@
 import * as THREE from "three";
 import {
   GEO, TONES, RBODY, RSOI, S, LIMB, CLEAR,
-  TH_FAR, TH_IN, TH_OUT, TH_CROSS,
-  frac, width, world, thetaAt, gradT, speed, range, headRFor,
+  TH_FAR, TH_IN, TH_OUT, TH_CROSS, TH_PROCESS, FLIGHT,
+  frac, width, world, thetaAt, flightAt, gradT, headRFor,
 } from "@/lib/orbit";
 
 const T = TONES.bright;
@@ -23,27 +23,29 @@ const T = TONES.bright;
 THREE.ColorManagement.enabled = false;
 
 /* ── keyframes ──────────────────────────────────────────────────────────────
- * Where the orbit sits on screen, how big, and how tilted, at each phase.
- * x/y are fractions of the viewport (0,0 top-left); size is the ring's radius
- * as a fraction of the viewport's shorter side; tilt in radians.
- * `th` pins the craft's true anomaly to the phase, so sections can own phases.
+ * One per page section (the scroll director pins each section to its `th`).
+ * x/y: where the body sits, as fractions of the viewport (0,0 top-left).
+ * size: ring radius as a fraction of the viewport's shorter side.
+ * dim: canvas opacity, lowered behind full-width text.
  */
-export type Key = { th: number; x: number; y: number; size: number; tiltX: number; tiltY: number; rotZ: number };
+export type Key = { th: number; x: number; y: number; size: number; tiltX: number; tiltY: number; rotZ: number; dim: number };
 
 const DESKTOP: Key[] = [
-  { th: TH_FAR,         x: 0.70, y: 0.60, size: 0.30, tiltX: -1.00, tiltY: 0.30, rotZ: 0.00 }, // approach
-  { th: TH_IN,          x: 0.74, y: 0.52, size: 0.36, tiltX: -0.70, tiltY: 0.22, rotZ: 0.05 }, // capture: crossing the ring
-  { th: 0,              x: 0.76, y: 0.50, size: 0.40, tiltX: -0.45, tiltY: 0.12, rotZ: 0.10 }, // periapsis: the whip
-  { th: TH_CROSS,       x: 0.72, y: 0.46, size: 0.34, tiltX: -0.20, tiltY: 0.05, rotZ: 0.05 }, // exit: punching out
-  { th: TH_OUT,         x: 0.50, y: 0.42, size: 0.22, tiltX: 0.00,  tiltY: 0.00, rotZ: 0.00 }, // resolve: the mark
+  { th: TH_FAR,     x: 0.70, y: 0.62, size: 0.30, tiltX: -1.00, tiltY: 0.30, rotZ: -0.90, dim: 1.00 }, // Hero: approach (from above, clear of the headline)
+  { th: TH_IN,      x: 0.90, y: 0.56, size: 0.24, tiltX: -0.70, tiltY: 0.22, rotZ: -0.30, dim: 0.35 }, // Capabilities: through the ring, in the margin
+  { th: 0,          x: 0.80, y: 0.30, size: 0.26, tiltX: -0.45, tiltY: 0.12, rotZ: 0.10, dim: 1.00 }, // Work: the whip, above the rail
+  { th: TH_PROCESS, x: 0.78, y: 0.52, size: 0.32, tiltX: -0.25, tiltY: 0.06, rotZ: 0.06, dim: 0.95 }, // Process: climbing out
+  { th: TH_CROSS,   x: 0.76, y: 0.40, size: 0.26, tiltX: -0.12, tiltY: 0.03, rotZ: 0.03, dim: 1.00 }, // Contact: the punch-through, beside the heading
+  { th: TH_OUT,     x: 0.50, y: 0.36, size: 0.22, tiltX: 0.00,  tiltY: 0.00, rotZ: 0.00, dim: 1.00 }, // Sign-off: the mark
 ];
 
 const MOBILE: Key[] = [
-  { th: TH_FAR,   x: 0.62, y: 0.26, size: 0.42, tiltX: -1.00, tiltY: 0.25, rotZ: 0.00 },
-  { th: TH_IN,    x: 0.62, y: 0.24, size: 0.46, tiltX: -0.70, tiltY: 0.18, rotZ: 0.05 },
-  { th: 0,        x: 0.60, y: 0.22, size: 0.52, tiltX: -0.45, tiltY: 0.10, rotZ: 0.08 },
-  { th: TH_CROSS, x: 0.56, y: 0.22, size: 0.46, tiltX: -0.20, tiltY: 0.04, rotZ: 0.04 },
-  { th: TH_OUT,   x: 0.50, y: 0.30, size: 0.34, tiltX: 0.00,  tiltY: 0.00, rotZ: 0.00 },
+  { th: TH_FAR,     x: 0.66, y: 0.30, size: 0.40, tiltX: -1.00, tiltY: 0.25, rotZ: -0.60, dim: 0.90 },
+  { th: TH_IN,      x: 0.78, y: 0.20, size: 0.34, tiltX: -0.70, tiltY: 0.18, rotZ: 0.05, dim: 0.45 },
+  { th: 0,          x: 0.72, y: 0.18, size: 0.36, tiltX: -0.45, tiltY: 0.10, rotZ: 0.08, dim: 0.80 },
+  { th: TH_PROCESS, x: 0.76, y: 0.18, size: 0.32, tiltX: -0.25, tiltY: 0.05, rotZ: 0.05, dim: 0.45 },
+  { th: TH_CROSS,   x: 0.74, y: 0.18, size: 0.32, tiltX: -0.12, tiltY: 0.03, rotZ: 0.03, dim: 0.60 },
+  { th: TH_OUT,     x: 0.50, y: 0.36, size: 0.34, tiltX: 0.00,  tiltY: 0.00, rotZ: 0.00, dim: 1.00 },
 ];
 
 /** Ribbon width and head size in flight, relative to the mark (1 at resolve). */
@@ -101,16 +103,7 @@ function ribbonGeometry(extra: number) {
   return g;
 }
 
-/** Where along the flight (0..1) the craft is at true anomaly th. */
-function sAt(th: number) {
-  // thetaAt is monotone decreasing, so bisect
-  let lo = 0, hi = 1;
-  for (let i = 0; i < 40; i++) {
-    const mid = (lo + hi) / 2;
-    if (thetaAt(mid) > th) lo = mid; else hi = mid;
-  }
-  return (lo + hi) / 2;
-}
+const sAt = flightAt;
 
 const glsl = (s: TemplateStringsArray) => s.join("");
 const hex = (h: string) => new THREE.Color(h);
@@ -199,11 +192,13 @@ const ringFrag = glsl`
   uniform vec2 uGapCenter;   // object-space point where the exit crosses the ring
   uniform float uGapRadius;  // 0 until the craft punches through
   uniform vec3 uColor;
+  uniform vec3 uFlash;
   uniform float uOpacity;
+  uniform float uPulse;      // 0..1 flash as the craft crosses the ring
   varying vec3 vPos;
   void main() {
     if (distance(vPos.xy, uGapCenter) < uGapRadius) discard;
-    gl_FragColor = vec4(uColor, uOpacity);
+    gl_FragColor = vec4(mix(uColor, uFlash, uPulse), min(1.0, uOpacity + 0.5 * uPulse));
   }
 `;
 
@@ -212,6 +207,19 @@ const ringVert = glsl`
   void main() {
     vPos = position;
     gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+  }
+`;
+
+// The moon: something that stays in orbit (the client we keep supporting).
+// Lit from the same side as the body's crescent.
+const moonVert = bodyVert;
+const moonFrag = glsl`
+  uniform vec3 uDark; uniform vec3 uLit;
+  uniform float uFade;
+  varying vec3 vNormal;
+  void main() {
+    float l = smoothstep(-0.15, 0.45, dot(normalize(vNormal), normalize(vec3(-0.6, 0.65, 0.45))));
+    gl_FragColor = vec4(mix(uDark, uLit, l), uFade);
   }
 `;
 
@@ -230,13 +238,11 @@ function discTexture() {
 
 /* ── the scene ────────────────────────────────────────────────────────────── */
 
-export type Telemetry = { phase: string; velocity: number; range: number };
-
 export type OrbitScene = {
   setProgress: (p: number) => void;
-  setGap: (g: number) => void;       // 0..1 ring punch-through
+  setPlot: (t: number) => void;               // 0..1 how much of the planned course is drawn
+  headScreen: () => { x: number; y: number }; // the craft, in CSS px — the launch hands off here
   resize: () => void;
-  telemetry: () => Telemetry;
   dispose: () => void;
 };
 
@@ -288,7 +294,7 @@ export function createOrbitScene(canvas: HTMLCanvasElement, opts: { mobile: bool
     vertexShader: ringVert, fragmentShader: ringFrag,
     uniforms: {
       uGapCenter: { value: new THREE.Vector2(cross[0], cross[1]) }, uGapRadius: { value: 0 },
-      uColor: { value: hex(T.ring) }, uOpacity: { value: T.ringOp },
+      uColor: { value: hex(T.ring) }, uFlash: { value: hex(T.g3) }, uOpacity: { value: T.ringOp }, uPulse: { value: 0 },
     },
     transparent: true, depthWrite: false,
   });
@@ -325,9 +331,26 @@ export function createOrbitScene(canvas: HTMLCanvasElement, opts: { mobile: bool
   head.renderOrder = 5;
   orbit.add(glow, head);
 
+  // a small moon on a tilted circular orbit between the body and the ring
+  const moonPlane = new THREE.Group();
+  moonPlane.rotation.set(0.62, -0.25, 0);
+  const moonMat = new THREE.ShaderMaterial({
+    vertexShader: moonVert, fragmentShader: moonFrag,
+    uniforms: { uDark: { value: hex("#0B2A33") }, uLit: { value: hex(T.g2) }, uFade: { value: 1 } },
+    transparent: true,
+  });
+  const moon = new THREE.Mesh(new THREE.SphereGeometry(1.5, 24, 16), moonMat);
+  moon.renderOrder = 1;
+  moonPlane.add(moon);
+  orbit.add(moonPlane);
+  const MOON_R = 15.5;
+
+  const courseCount = coursePts.length;
+  let plot = 1;
+
   /* ── state ── */
   let progress = 0;
-  let gap = 0;
+  let clock = 0;          // seconds, drives the moon
   let w = 1, h = 1;
   let th = TH_FAR;
   const keys = opts.mobile ? MOBILE : DESKTOP;
@@ -341,7 +364,7 @@ export function createOrbitScene(canvas: HTMLCanvasElement, opts: { mobile: bool
     const a = keys[i], b = keys[i + 1];
     const t = ease(Math.min(1, Math.max(0, (s - sKeys[i]) / (sKeys[i + 1] - sKeys[i]))));
     const L = (x: number, y: number) => x + (y - x) * t;
-    return { th: 0, x: L(a.x, b.x), y: L(a.y, b.y), size: L(a.size, b.size), tiltX: L(a.tiltX, b.tiltX), tiltY: L(a.tiltY, b.tiltY), rotZ: L(a.rotZ, b.rotZ) };
+    return { th: 0, x: L(a.x, b.x), y: L(a.y, b.y), size: L(a.size, b.size), tiltX: L(a.tiltX, b.tiltX), tiltY: L(a.tiltY, b.tiltY), rotZ: L(a.rotZ, b.rotZ), dim: L(a.dim, b.dim) };
   }
 
   const v3 = new THREE.Vector3();
@@ -357,6 +380,11 @@ export function createOrbitScene(canvas: HTMLCanvasElement, opts: { mobile: bool
     orbit.scale.setScalar(ringPx / pxPerUnit / rSoi);
     orbit.position.set((k.x - 0.5) * w / pxPerUnit, -(k.y - 0.5) * h / pxPerUnit, 0);
     orbit.rotation.set(k.tiltX, k.tiltY, k.rotZ);
+    canvas.style.opacity = String(k.dim);
+
+    // the moon keeps its own time, nudged along by the scroll
+    const ma = clock * 0.35 + progress * 6;
+    moon.position.set(Math.cos(ma) * MOON_R, Math.sin(ma) * MOON_R, 0);
     orbit.updateMatrixWorld(true);
 
     // the craft
@@ -377,7 +405,14 @@ export function createOrbitScene(canvas: HTMLCanvasElement, opts: { mobile: bool
     bodyMat.uniforms.uResolve.value = resolve;
     courseMat.opacity = 0.14 * (1 - THREE.MathUtils.smoothstep(progress, 0.08, 0.3));
     glow.material.opacity = T.glowOp * (0.6 + 0.4 * resolve) + 0.15 * (1 - resolve);
+    moonMat.uniforms.uFade.value = 1 - THREE.MathUtils.smoothstep(progress, 0.9, 0.97);
+    moon.visible = moonMat.uniforms.uFade.value > 0.001;
+    course.geometry.setDrawRange(0, Math.round(courseCount * plot));
 
+    // the ring flashes as the craft crosses it, and opens where it punches out
+    const pulse = Math.exp(-Math.pow((progress - FLIGHT.ringIn) / 0.008, 2)) + Math.exp(-Math.pow((progress - FLIGHT.ringOut) / 0.01, 2));
+    ringMat.uniforms.uPulse.value = Math.min(1, pulse) * (1 - resolve);
+    const gap = THREE.MathUtils.smoothstep(progress, FLIGHT.ringOut - 0.003, FLIGHT.ringOut + 0.025);
     ringMat.uniforms.uGapRadius.value = GEO.knock * gap;
 
     // body crescent + carve depth, in screen space
@@ -390,7 +425,11 @@ export function createOrbitScene(canvas: HTMLCanvasElement, opts: { mobile: bool
     const rPx = rBody * orbit.scale.x * (h / (2 * -v3b.z * Math.tan(THREE.MathUtils.degToRad(camera.fov / 2)))) * dpr;
     bodyMat.uniforms.uRadiusPx.value = rPx;
     const limbPx = (LIMB * S / rBody) * rPx;
-    bodyMat.uniforms.uLimbPx.value.set(limbPx, -limbPx); // SVG pushes the mask down-right; GL y is up
+    // SVG pushes the mask down-right (GL y is up). In flight the light drifts
+    // round, and locks onto the mark's angle as it resolves.
+    const sweep = -1.1 * (1 - THREE.MathUtils.smoothstep(progress, 0.15, 0.97));
+    const c = Math.cos(sweep), sn = Math.sin(sweep);
+    bodyMat.uniforms.uLimbPx.value.set(limbPx * c + limbPx * sn, limbPx * sn - limbPx * c);
 
     renderer.clear(true, true, true);
     renderer.render(scene, camera);
@@ -400,6 +439,20 @@ export function createOrbitScene(canvas: HTMLCanvasElement, opts: { mobile: bool
   const schedule = () => {
     if (!raf) raf = requestAnimationFrame(() => { raf = 0; render(); });
   };
+
+  // the moon is the only thing that moves on its own: tick at ~30fps while it's
+  // visible and the tab is, otherwise stay fully on-demand
+  let last = performance.now();
+  let tickRaf = 0;
+  const tick = (now: number) => {
+    tickRaf = requestAnimationFrame(tick);
+    if (document.hidden || !moon.visible) { last = now; return; }
+    if (now - last < 33) return;
+    clock += Math.min(0.1, (now - last) / 1000);
+    last = now;
+    render();
+  };
+  tickRaf = requestAnimationFrame(tick);
 
   function resize() {
     w = canvas.clientWidth || window.innerWidth;
@@ -419,17 +472,20 @@ export function createOrbitScene(canvas: HTMLCanvasElement, opts: { mobile: bool
       const next = Math.min(1, Math.max(0, p));
       if (next !== progress) { progress = next; schedule(); }
     },
-    setGap(g) {
-      const next = Math.min(1, Math.max(0, g));
-      if (next !== gap) { gap = next; schedule(); }
+    setPlot(t) {
+      const next = Math.min(1, Math.max(0, t));
+      if (next !== plot) { plot = next; schedule(); }
+    },
+    headScreen() {
+      render();
+      head.getWorldPosition(v3);
+      v3.project(camera);
+      return { x: (v3.x * 0.5 + 0.5) * w, y: (1 - (v3.y * 0.5 + 0.5)) * h };
     },
     resize,
-    telemetry() {
-      const phase = th > TH_IN ? "Approach" : th > 0 ? "Capture" : th > TH_CROSS ? "Periapsis" : progress < 0.97 ? "Exit" : "Escape";
-      return { phase, velocity: speed(th), range: range(th) };
-    },
     dispose() {
       cancelAnimationFrame(raf);
+      cancelAnimationFrame(tickRaf);
       scene.traverse((o) => {
         const m = o as THREE.Mesh;
         m.geometry?.dispose?.();
@@ -441,12 +497,3 @@ export function createOrbitScene(canvas: HTMLCanvasElement, opts: { mobile: bool
     },
   };
 }
-
-/** Progress (0..1) at which the craft reaches each phase anchor — for mapping page sections. */
-export const PHASE_PROGRESS = {
-  approach: 0,
-  ringIn: sAt(TH_IN),
-  periapsis: sAt(0),
-  ringOut: sAt(TH_CROSS),
-  resolve: 1,
-};

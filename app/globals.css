@@ -89,6 +89,33 @@
 .nebula-scroll::-webkit-scrollbar-thumb { background: rgba(20,184,166,0.3); border-radius: 2px; }
 .nebula-scroll::-webkit-scrollbar-thumb:hover { background: rgba(20,184,166,0.6); }
 
+/* Launch screen (see app/layout.tsx): hidden unless the head script opted in */
+#launch { display: none; }
+html.launching #launch {
+  display: block;
+  position: fixed;
+  inset: 0;
+  z-index: 400;
+  background: #0A1628;
+}
+html.launching body { overflow: hidden; }
+#launch-label {
+  position: absolute;
+  left: 50%;
+  bottom: 9%;
+  transform: translateX(-50%);
+  font-family: "Space Mono", monospace;
+  font-size: 11px;
+  letter-spacing: 0.35em;
+  text-transform: uppercase;
+  color: #2DD4BF;
+  opacity: 0;
+  white-space: nowrap;
+}
+
+/* the sign-off's static mark stands in only when the scene isn't running */
+html[data-orbit="scene"] .signoff-static { visibility: hidden; }
+
 /* Work rail: bleeds edge to edge, but its first card lines up with the page
    column (max-w-6xl + px-6), and snapping respects the same inset. */
 .rail-pad {
