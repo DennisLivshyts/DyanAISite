@@ -202,13 +202,30 @@ function discTexture() {
 export type OrbitScene = {
   setProgress: (p: number) => void;
   setPlot: (t: number) => void;               // 0..1 how much of the planned course is drawn
+  /**
+   * Draw one frame now, synchronously, from these values alone — no rAF, no
+   * easing carried over from earlier frames. The same (progress, plot) gives
+   * the same pixels whatever was drawn before. Cortana Studio's code renderer
+   * (cortana-dashboard capture/render-comp.mjs) drives the scene through this,
+   * so a commercial and the website share one scene definition.
+   */
+  renderAt: (progress: number, plot?: number) => void;
   headScreen: () => { x: number; y: number }; // the craft, in CSS px — the launch hands off here
   resize: () => void;
   dispose: () => void;
 };
 
-export function createOrbitScene(canvas: HTMLCanvasElement, opts: { mobile: boolean }): OrbitScene {
-  const renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: true, stencil: true, powerPreference: "high-performance" });
+/**
+ * capture: for offline rendering. The drawing buffer is kept after each frame
+ * so a screenshot always finds the frame just drawn, and the pixel ratio is 1
+ * so the output is exactly the viewport size on any machine.
+ */
+export function createOrbitScene(canvas: HTMLCanvasElement, opts: { mobile: boolean; capture?: boolean }): OrbitScene {
+  const capture = !!opts.capture;
+  const renderer = new THREE.WebGLRenderer({
+    canvas, alpha: true, antialias: true, stencil: true, powerPreference: "high-performance",
+    preserveDrawingBuffer: capture,
+  });
   renderer.outputColorSpace = THREE.LinearSRGBColorSpace;
   renderer.setClearColor(0x000000, 0);
 
@@ -383,12 +400,12 @@ export function createOrbitScene(canvas: HTMLCanvasElement, opts: { mobile: bool
   function resize() {
     w = canvas.clientWidth || window.innerWidth;
     h = canvas.clientHeight || window.innerHeight;
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, opts.mobile ? 1.5 : 2));
+    renderer.setPixelRatio(capture ? 1 : Math.min(window.devicePixelRatio || 1, opts.mobile ? 1.5 : 2));
     renderer.setSize(w, h, false);
     camera.aspect = w / h;
     camera.updateProjectionMatrix();
     camera.updateMatrixWorld();
-    schedule();
+    if (!capture) schedule();
   }
 
   resize();
@@ -401,6 +418,13 @@ export function createOrbitScene(canvas: HTMLCanvasElement, opts: { mobile: bool
     setPlot(t) {
       const next = Math.min(1, Math.max(0, t));
       if (next !== plot) { plot = next; schedule(); }
+    },
+    renderAt(p, t = 1) {
+      progress = Math.min(1, Math.max(0, p));
+      plot = Math.min(1, Math.max(0, t));
+      cancelAnimationFrame(raf);
+      raf = 0;
+      render();
     },
     headScreen() {
       render();
