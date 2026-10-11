@@ -228,7 +228,7 @@ export const KEYS_DESKTOP: Key[] = [
 export const KEYS_MOBILE: Key[] = [
   { th: TH_FAR,     x: 0.83, y: 0.22, size: 0.16, tiltX: -1.00, tiltY: 0.25, rotZ: -0.15, dim: 0.90 }, // small planet top-right, craft in from the top-left
   { th: TH_IN,      x: 0.78, y: 0.20, size: 0.34, tiltX: -0.70, tiltY: 0.18, rotZ: 0.05,  dim: 0.45 },
-  { th: 0,          x: 0.72, y: 0.18, size: 0.36, tiltX: -0.45, tiltY: 0.10, rotZ: 0.08, dim: 0.80 },
+  { th: 0,          x: 0.86, y: 0.07, size: 0.26, tiltX: -0.45, tiltY: 0.10, rotZ: 0.08, dim: 0.70 }, // Work: tucked in the top-right corner, clear of the heading
   { th: TH_PROCESS, x: 0.76, y: 0.18, size: 0.32, tiltX: -0.25, tiltY: 0.05, rotZ: 0.05, dim: 0.45 },
   { th: TH_CROSS,   x: 0.74, y: 0.18, size: 0.32, tiltX: -0.12, tiltY: 0.03, rotZ: 0.03, dim: 0.60 },
   { th: TH_OUT,     x: 0.50, y: 0.36, size: 0.34, tiltX: 0.00,  tiltY: 0.00, rotZ: 0.00, dim: 1.00 },

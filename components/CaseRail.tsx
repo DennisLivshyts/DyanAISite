@@ -96,7 +96,7 @@ function Dossier({
 
         {/* Header bar */}
         <div className="flex items-center justify-between gap-4 px-5 sm:px-7 py-4 border-b border-white/8">
-          <span className="font-space-mono text-[10px] tracking-[0.3em] uppercase text-gray-500">
+          <span className="font-space-mono text-[10px] tracking-[0.3em] uppercase text-gray-400">
             Case file {String(index + 1).padStart(2, "0")} / {String(total).padStart(2, "0")}
           </span>
           <div className="flex items-center gap-2">
@@ -136,7 +136,7 @@ function Dossier({
               </ul>
               <div className="flex flex-wrap gap-2 mb-7">
                 {c.tags.map((t) => (
-                  <span key={t} className="font-space-mono text-[10px] tracking-[0.15em] uppercase text-gray-500 border border-white/10 px-2.5 py-1">{t}</span>
+                  <span key={t} className="font-space-mono text-[10px] tracking-[0.15em] uppercase text-gray-400 border border-white/10 px-2.5 py-1">{t}</span>
                 ))}
               </div>
               {c.link && (
@@ -296,7 +296,7 @@ export default function CaseRail({ cases }: { cases: Case[] }) {
               <h3 className="font-syne font-bold text-white text-xl leading-tight mb-1.5">{c.name}</h3>
               <p className="text-gray-400 text-sm leading-relaxed min-h-[2.5rem]">{c.headline}</p>
               <div className="mt-5 flex items-center justify-between">
-                <span className="font-space-mono text-[10px] tracking-[0.15em] uppercase text-gray-600">
+                <span className="font-space-mono text-[10px] tracking-[0.15em] uppercase text-gray-400">
                   {String(i + 1).padStart(2, "0")}
                 </span>
                 <span className="font-space-mono text-[10px] tracking-[0.2em] uppercase text-teal-400/80 group-hover:text-teal-300 inline-flex items-center gap-2">

@@ -299,3 +299,110 @@ test("launch: ?launch replays it even after it has been seen", async ({ page }) 
   await expect(page.locator("html")).toHaveClass(/launching/);
   await expect(page.locator("#launch")).toBeVisible();
 });
+
+// ── accessibility: WCAG 2.1 A/AA on every state a visitor can reach ──────────
+import AxeBuilder from "@axe-core/playwright";
+
+async function axe(page: Page, include?: string) {
+  let b = new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"]);
+  if (include) b = b.include(include);
+  const r = await b.analyze();
+  return r.violations.map((v) => `${v.id} (${v.impact}): ${v.nodes.length}× ${v.nodes[0]?.target.join(" ")}`);
+}
+
+test("a11y: home page", async ({ page }) => {
+  await page.goto("/");
+  await page.waitForLoadState("networkidle");
+  expect(await axe(page)).toEqual([]);
+});
+
+test("a11y: booking popup", async ({ page }) => {
+  await page.goto("/");
+  await page.getByRole("button", { name: /book a free consultation/i }).first().click();
+  await expect(page.getByRole("heading", { name: "Schedule a Mission" })).toBeVisible();
+  await page.waitForTimeout(700);
+  expect(await axe(page)).toEqual([]);
+});
+
+test("a11y: open case panel", async ({ page }) => {
+  await page.goto("/");
+  await page.locator("#work [data-case]").first().click();
+  await expect(page.getByRole("dialog")).toBeVisible();
+  await page.waitForTimeout(700);   // let the unfold animation finish: mid-fade colours aren't the real ones
+  expect(await axe(page, "[role=dialog]")).toEqual([]);
+});
+
+test("a11y: 404", async ({ page }) => {
+  await page.goto("/nowhere");
+  expect(await axe(page)).toEqual([]);
+});
+
+// ── fallbacks: whatever happens to the 3D, the page stays whole ─────────────
+test("fallback: no WebGL -> static mark, page intact", async ({ page }) => {
+  await page.addInitScript(() => {
+    const orig = HTMLCanvasElement.prototype.getContext;
+    // @ts-expect-error narrowing the overloads is not the point here
+    HTMLCanvasElement.prototype.getContext = function (type: string, ...rest: unknown[]) {
+      if (/webgl/i.test(type)) return null;
+      // @ts-expect-error passthrough
+      return orig.call(this, type, ...rest);
+    };
+  });
+  await page.goto("/");
+  await expect(page.locator("html")).toHaveAttribute("data-orbit", "static");
+  await expect(page.locator("canvas[data-orbit-scene='scene']")).toHaveCount(0);
+  await expect(page.getByRole("button", { name: /book a free consultation/i }).first()).toBeVisible();
+});
+
+test("fallback: the three.js chunk fails to load -> static mark", async ({ page }) => {
+  await page.route("**/_next/static/chunks/**/*.js", async (route) => {
+    const res = await route.fetch();
+    const body = await res.text();
+    if (body.includes("WebGLRenderer")) return route.abort();
+    return route.fulfill({ response: res, body });
+  });
+  await page.goto("/");
+  await expect(page.locator("html")).toHaveAttribute("data-orbit", "static", { timeout: 10_000 });
+  await expect(page.locator("canvas[data-orbit-scene='scene']")).toHaveCount(0);
+});
+
+for (const width of [1024, 1280, 1440, 1920]) test(`layout stays put while the page and the 3D load (CLS) at ${width}px`, async ({ page, isMobile }) => {
+  test.skip(isMobile && width !== 1280, "one phone run is enough");
+  if (!isMobile) await page.setViewportSize({ width, height: Math.round(width * 0.5625) });
+  await page.addInitScript(() => {
+    (window as unknown as { __cls: number }).__cls = 0;
+    new PerformanceObserver((list) => {
+      for (const e of list.getEntries() as unknown as { value: number; hadRecentInput: boolean }[]) {
+        if (!e.hadRecentInput) (window as unknown as { __cls: number }).__cls += e.value;
+      }
+    }).observe({ type: "layout-shift", buffered: true });
+  });
+  await page.goto("/");
+  await expect(page.locator("canvas[data-orbit-scene='scene']")).toBeAttached({ timeout: 15_000 });
+  await page.waitForTimeout(1500);
+  const cls = await page.evaluate(() => (window as unknown as { __cls: number }).__cls);
+  expect(cls).toBeLessThan(0.02);
+});
+
+test("keyboard only: Tab reaches nav, the CTA and the case cards; Enter books", async ({ page, isMobile }) => {
+  test.skip(isMobile, "keyboard navigation is a desktop concern");
+  await page.goto("/");
+  const seen = new Set<string>();
+  for (let i = 0; i < 40; i++) {
+    await page.keyboard.press("Tab");
+    const label = await page.evaluate(() => {
+      const el = document.activeElement as HTMLElement | null;
+      if (!el) return "";
+      return (el.getAttribute("aria-label") || el.textContent || "").trim().replace(/\s+/g, " ").slice(0, 40);
+    });
+    seen.add(label);
+  }
+  const all = [...seen].join(" | ");
+  for (const want of ["Capabilities", "Work", "Book a Call", "Book a Free Consultation", "CROSS LINE"]) {
+    expect(all, `Tab never reached "${want}"`).toContain(want);
+  }
+  // and the CTA works from the keyboard
+  await page.getByRole("button", { name: /book a free consultation/i }).first().focus();
+  await page.keyboard.press("Enter");
+  await expect(page.getByRole("heading", { name: "Schedule a Mission" })).toBeVisible();
+});

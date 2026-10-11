@@ -26,12 +26,14 @@ export default function Capabilities() {
               >
                 <div className="absolute left-0 top-0 bottom-0 w-[2px] bg-teal-400 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
 
+                {/* decorative numeral: drawn by CSS (content: attr), so it isn't read out or
+                    held to text-contrast rules meant for words */}
                 <div
-                  className="font-space-mono font-bold text-white/10 group-hover:text-teal-400/30 transition-colors duration-300 select-none leading-none"
+                  aria-hidden="true"
+                  data-n={String(i + 1).padStart(2, "0")}
+                  className="deco-numeral font-space-mono font-bold text-white/10 group-hover:text-teal-400/30 transition-colors duration-300 select-none leading-none"
                   style={{ fontSize: "clamp(2rem, 4vw, 3.5rem)" }}
-                >
-                  {String(i + 1).padStart(2, "0")}
-                </div>
+                />
 
                 <h3 className="pt-1 font-syne text-xl md:text-2xl font-bold text-white group-hover:text-teal-200 transition-colors duration-300 leading-tight">
                   {cap.title}
@@ -41,7 +43,7 @@ export default function Capabilities() {
                   <p className="text-gray-400 leading-relaxed text-sm mb-6">{cap.body.text}</p>
                   {proof.length > 0 && (
                     <div className="flex flex-wrap items-center gap-2">
-                      <span className="font-space-mono text-[10px] tracking-[0.2em] uppercase text-gray-600 mr-1">See</span>
+                      <span className="font-space-mono text-[10px] tracking-[0.2em] uppercase text-gray-400 mr-1">See</span>
                       {proof.map((slug) => (
                         <a
                           key={slug}

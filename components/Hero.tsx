@@ -54,7 +54,10 @@ export default function Hero() {
               {/* The logo's gravity assist, in words */}
               <h1 className="font-syne font-bold leading-[1.02] tracking-tight mb-10"
                 style={{ fontSize: "clamp(2.5rem, 5.5vw, 5rem)" }}>
-                <span className="block text-white">You arrive with momentum.</span>
+                {/* explicit break on desktop: the headline always sets on these lines there,
+                    so the swap from the fallback font to DM Sans can't re-wrap it and
+                    shift the hero (it measured 0.087 CLS when it did) */}
+                <span className="block text-white">You arrive with<br className="hidden lg:inline" /> momentum.</span>
                 <span className="block text-white">We bend the course.</span>
                 <span className="block text-gradient" style={{ paddingBottom: '0.08em' }}>You leave faster.</span>
               </h1>
@@ -79,7 +82,7 @@ export default function Hero() {
 
                 <a
                   href="#work"
-                  className="group font-space-mono text-[11px] tracking-[0.25em] uppercase text-gray-500 hover:text-teal-400 transition-colors flex items-center gap-3"
+                  className="group font-space-mono text-[11px] tracking-[0.25em] uppercase text-gray-400 hover:text-teal-400 transition-colors flex items-center gap-3"
                 >
                   <span className="w-8 h-px bg-current group-hover:w-12 transition-all duration-300" />
                   See the Work
@@ -104,7 +107,7 @@ export default function Hero() {
 
                 {/* Header */}
                 <div className="flex items-center justify-between mb-6 pb-5 border-b border-white/8">
-                  <span className="font-space-mono text-[10px] tracking-[0.3em] text-gray-500 uppercase">
+                  <span className="font-space-mono text-[10px] tracking-[0.3em] text-gray-400 uppercase">
                     Flight Status
                   </span>
                   <div className="flex items-center gap-1.5">
@@ -117,7 +120,7 @@ export default function Hero() {
                 <div className="space-y-5">
                   {HUD_ROWS.map((row) => (
                     <div key={row.label}>
-                      <div className="font-space-mono text-[9px] tracking-[0.28em] text-gray-600 uppercase mb-1">
+                      <div className="font-space-mono text-[9px] tracking-[0.28em] text-gray-400 uppercase mb-1">
                         {row.label}
                       </div>
                       <div
@@ -151,7 +154,7 @@ export default function Hero() {
             {TICKER.map((item, i) => (
               <span
                 key={i}
-                className="font-space-mono text-[10px] tracking-[0.3em] text-gray-600 uppercase px-10 whitespace-nowrap inline-flex items-center gap-10"
+                className="font-space-mono text-[10px] tracking-[0.3em] text-gray-400 uppercase px-10 whitespace-nowrap inline-flex items-center gap-10"
               >
                 {item}
                 <span className="text-teal-500/25 text-xs">◆</span>

@@ -67,12 +67,12 @@ function StepBar({ current }: { current: number }) {
         <div key={label} className="flex items-center gap-2">
           <div className={`flex items-center gap-1.5 text-xs font-medium transition-colors ${
             i < current  ? "text-teal-400" :
-            i === current? "text-white"    : "text-gray-600"
+            i === current? "text-white"    : "text-gray-400"
           }`}>
             <div className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] border transition-all ${
               i < current  ? "bg-teal-500/30 border-teal-500/60 text-teal-400"  :
               i === current? "bg-teal-500/20 border-teal-400    text-teal-300"  :
-                             "bg-white/5    border-white/15     text-gray-600"
+                             "bg-white/5    border-white/15     text-gray-400"
             }`}>
               {i < current ? "✓" : i + 1}
             </div>
@@ -214,7 +214,7 @@ export default function BookingModal({ isOpen, onClose }: Props) {
         </div>
 
         {/* Close */}
-        <button onClick={onClose}
+        <button onClick={onClose} aria-label="Close"
           className="absolute top-4 right-4 z-20 w-8 h-8 rounded-full border border-white/10 bg-white/5 hover:bg-white/10 flex items-center justify-center text-gray-400 hover:text-white transition-all">
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -240,7 +240,7 @@ export default function BookingModal({ isOpen, onClose }: Props) {
             <div className="animate-fade-slide-up">
               {/* Month nav */}
               <div className="flex items-center justify-between mb-4">
-                <button onClick={() => setMonth(m => { const n=new Date(m); n.setMonth(n.getMonth()-1); return n; })}
+                <button aria-label="Previous month" onClick={() => setMonth(m => { const n=new Date(m); n.setMonth(n.getMonth()-1); return n; })}
                   disabled={month.getFullYear() === today.getFullYear() && month.getMonth() <= today.getMonth()}
                   className="w-8 h-8 rounded-lg border border-white/10 bg-white/5 hover:bg-white/10 flex items-center justify-center text-gray-300 disabled:opacity-30 disabled:cursor-not-allowed transition-all">
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -248,7 +248,7 @@ export default function BookingModal({ isOpen, onClose }: Props) {
                   </svg>
                 </button>
                 <span className="text-white font-semibold">{MONTHS[monthIdx]} {year}</span>
-                <button onClick={() => setMonth(m => { const n=new Date(m); n.setMonth(n.getMonth()+1); return n; })}
+                <button aria-label="Next month" onClick={() => setMonth(m => { const n=new Date(m); n.setMonth(n.getMonth()+1); return n; })}
                   className="w-8 h-8 rounded-lg border border-white/10 bg-white/5 hover:bg-white/10 flex items-center justify-center text-gray-300 transition-all">
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
@@ -273,7 +273,7 @@ export default function BookingModal({ isOpen, onClose }: Props) {
                 <div className="grid grid-cols-7 mb-1" style={{ height: HEADER_H }}>
                   {DAY_LBLS.map(d => (
                     <div key={d} className={`flex items-center justify-center text-xs font-medium ${
-                      d === "Su" || d === "Sa" ? "text-gray-600" : "text-gray-500"
+                      d === "Su" || d === "Sa" ? "text-gray-400" : "text-gray-300"
                     }`}>{d}</div>
                   ))}
                 </div>
@@ -332,7 +332,7 @@ export default function BookingModal({ isOpen, onClose }: Props) {
                 </button>
                 <div>
                   <p className="text-white font-semibold text-sm">{fmtDate(selectedDate)}</p>
-                  <p className="text-gray-500 text-xs">Pacific Time (PT)</p>
+                  <p className="text-gray-400 text-xs">Pacific Time (PT)</p>
                 </div>
               </div>
 
@@ -341,7 +341,7 @@ export default function BookingModal({ isOpen, onClose }: Props) {
               </p>
 
               {loadingSlots ? (
-                <div className="flex items-center justify-center py-12 gap-3 text-gray-500 text-sm">
+                <div className="flex items-center justify-center py-12 gap-3 text-gray-400 text-sm">
                   <svg className="w-4 h-4 animate-spin text-teal-400" fill="none" viewBox="0 0 24 24">
                     <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/>
                     <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"/>
@@ -349,7 +349,7 @@ export default function BookingModal({ isOpen, onClose }: Props) {
                   Scanning orbital windows…
                 </div>
               ) : slots.length === 0 ? (
-                <div className="text-center py-10 text-gray-500 text-sm">
+                <div className="text-center py-10 text-gray-400 text-sm">
                   No availability on this date.<br />
                   <button onClick={() => setStep(0)} className="text-teal-400 hover:text-teal-300 mt-2">
                     Pick another day
@@ -400,6 +400,7 @@ export default function BookingModal({ isOpen, onClose }: Props) {
                 ].map(({ name, label, type, placeholder }) => (
                   <div key={name} className="relative">
                     <input
+                      id={`book-${name}`}
                       name={name}
                       type={type}
                       value={form[name as keyof typeof form]}
@@ -408,7 +409,7 @@ export default function BookingModal({ isOpen, onClose }: Props) {
                       placeholder=" "
                       className="peer w-full bg-white/5 border border-white/10 hover:border-white/20 focus:border-teal-500/60 rounded-xl px-4 pt-6 pb-3 text-white outline-none transition-colors text-sm"
                     />
-                    <label className="absolute left-4 top-4 text-gray-500 text-sm pointer-events-none transition-all duration-200
+                    <label htmlFor={`book-${name}`} className="absolute left-4 top-4 text-gray-400 text-sm pointer-events-none transition-all duration-200
                       peer-focus:top-2 peer-focus:text-[11px] peer-focus:text-teal-400
                       peer-[&:not(:placeholder-shown)]:top-2 peer-[&:not(:placeholder-shown)]:text-[11px] peer-[&:not(:placeholder-shown)]:text-gray-400">
                       {label}
@@ -418,6 +419,7 @@ export default function BookingModal({ isOpen, onClose }: Props) {
 
                 <div className="relative">
                   <textarea
+                    id="book-notes"
                     name="notes"
                     value={form.notes}
                     onChange={e => setForm(f => ({ ...f, notes: e.target.value }))}
@@ -425,7 +427,7 @@ export default function BookingModal({ isOpen, onClose }: Props) {
                     placeholder=" "
                     className="peer w-full bg-white/5 border border-white/10 hover:border-white/20 focus:border-teal-500/60 rounded-xl px-4 pt-6 pb-3 text-white outline-none transition-colors text-sm resize-none"
                   />
-                  <label className="absolute left-4 top-4 text-gray-500 text-sm pointer-events-none transition-all duration-200
+                  <label htmlFor="book-notes" className="absolute left-4 top-4 text-gray-400 text-sm pointer-events-none transition-all duration-200
                     peer-focus:top-2 peer-focus:text-[11px] peer-focus:text-teal-400
                     peer-[&:not(:placeholder-shown)]:top-2 peer-[&:not(:placeholder-shown)]:text-[11px] peer-[&:not(:placeholder-shown)]:text-gray-400">
                     What would you like to discuss?

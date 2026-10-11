@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700;800&family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap');
+/* Fonts are self-hosted by next/font (app/layout.tsx) as --font-dm-sans / --font-space-mono. */
 
 @tailwind base;
 @tailwind components;
@@ -12,7 +12,7 @@
   body {
     background-color: #0A1628;
     color: #ffffff;
-    font-family: "DM Sans", system-ui, sans-serif;
+    font-family: var(--font-dm-sans), system-ui, sans-serif;
   }
 }
 
@@ -104,7 +104,7 @@ html.launching body { overflow: hidden; }
   left: 50%;
   bottom: 9%;
   transform: translateX(-50%);
-  font-family: "Space Mono", monospace;
+  font-family: var(--font-space-mono), monospace;
   font-size: 11px;
   letter-spacing: 0.35em;
   text-transform: uppercase;
@@ -159,9 +159,11 @@ html[data-orbit="scene"] .signoff-static { visibility: hidden; }
 .no-scrollbar { scrollbar-width: none; }
 .no-scrollbar::-webkit-scrollbar { display: none; }
 
+.deco-numeral::before { content: attr(data-n); }
+
 @layer utilities {
-  .font-syne { font-family: "DM Sans", sans-serif; }
-  .font-space-mono { font-family: "Space Mono", monospace; }
+  .font-syne { font-family: var(--font-dm-sans), sans-serif; }
+  .font-space-mono { font-family: var(--font-space-mono), monospace; }
 
   .text-gradient {
     background: linear-gradient(100deg, #2DD4BF 10%, #67E8F9 60%, #a5f3fc 100%);

@@ -36,7 +36,7 @@ function Invitation() {
         <g key={i} transform={`translate(${a.x} ${a.y})`}>
           <rect width="60" height="78" rx="30" ry="30" fill="#0A1628" stroke={TEAL} strokeOpacity={0.35 + i * 0.18} strokeWidth="1.5" />
           <rect x="8" y="8" width="44" height="62" rx="22" ry="22" fill="none" stroke={TEAL} strokeOpacity="0.15" />
-          <text x="30" y="47" textAnchor="middle" fontFamily="Space Mono, monospace" fontSize="11" fill={i === 3 ? ICE : TEAL} fillOpacity={0.5 + i * 0.15}>
+          <text x="30" y="47" textAnchor="middle" style={{ fontFamily: "var(--font-space-mono), monospace" }} fontSize="11" fill={i === 3 ? ICE : TEAL} fillOpacity={0.5 + i * 0.15}>
             {["I", "II", "III", "IV"][i]}
           </text>
         </g>

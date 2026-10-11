@@ -74,7 +74,7 @@ export default function WhyUs() {
               <h3 className="font-syne text-lg font-bold text-white mb-3 group-hover:text-teal-200 transition-colors duration-300 leading-snug">
                 {r.title}
               </h3>
-              <p className="text-gray-500 text-sm leading-relaxed">
+              <p className="text-gray-400 text-sm leading-relaxed">
                 {r.description}
               </p>
             </div>

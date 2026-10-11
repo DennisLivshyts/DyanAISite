@@ -1,8 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { gsap } from "gsap";
-import { ScrollTrigger } from "gsap/ScrollTrigger";
+import type { gsap as GSAP } from "gsap";
 import Logo from "../Logo";
 import { FLIGHT, approachHeading, approachScreen } from "@/lib/orbit";
 import { flight } from "@/lib/flight";
@@ -13,8 +12,9 @@ import type { OrbitScene } from "./scene";
  *
  * - Scroll director: each page section is pinned to a point on the flight
  *   (ring crossing at Capabilities, periapsis at Work, punch-through on the
- *   Contact booking card, the mark at the sign-off). GSAP smooths the motion.
- *   It always runs, so the tracker and status panel work without WebGL too.
+ *   Contact heading, the mark at the sign-off). GSAP smooths the motion once it
+ *   has loaded; until then scroll maps straight through. It always runs, so the
+ *   tracker and status panel work without WebGL too.
  * - Scene: three.js is a separate chunk, created once the browser is idle —
  *   or straight away when the launch screen is showing, which hides the load.
  * - Launch: first visit per session, a craft climbs from the bottom of the
@@ -24,7 +24,18 @@ import type { OrbitScene } from "./scene";
  * - ?orbit=<0..1> pins the flight and shows a scrubber (review/debug).
  */
 
-gsap.registerPlugin(ScrollTrigger);
+// GSAP (~48 KB gz with ScrollTrigger) is loaded on demand, after hydration —
+// nothing needs it for the first paint.
+type Gsap = typeof GSAP;
+type Loaded = { gsap: Gsap; ScrollTrigger: typeof import("gsap/ScrollTrigger").ScrollTrigger };
+let gsapLoad: Promise<Loaded> | null = null;
+function loadGsap(): Promise<Loaded> {
+  gsapLoad ??= Promise.all([import("gsap"), import("gsap/ScrollTrigger")]).then(([g, st]) => {
+    g.gsap.registerPlugin(st.ScrollTrigger);
+    return { gsap: g.gsap, ScrollTrigger: st.ScrollTrigger };
+  });
+  return gsapLoad;
+}
 
 type Mode = "pending" | "scene" | "static";
 
@@ -111,17 +122,37 @@ export default function OrbitMount() {
       sceneRef.current?.setProgress(proxy.s);
     };
     apply();
-    const to = gsap.quickTo(proxy, "s", { duration: reduce ? 0 : 0.7, ease: "power3.out", onUpdate: apply });
-    const st = ScrollTrigger.create({
-      start: 0,
-      end: "max",
-      onUpdate: (self) => to(mapScroll(anchors, self.scroll())),
-      onRefresh: () => { anchors = measureAnchors(); to(mapScroll(anchors, window.scrollY)); },
-    });
+    // until GSAP arrives: scroll maps straight through, no smoothing
+    let to: (s: number) => void = (s) => { proxy.s = s; apply(); };
+    const direct = () => to(mapScroll(anchors, window.scrollY));
+    const remeasure = () => { anchors = measureAnchors(); direct(); };
+    window.addEventListener("scroll", direct, { passive: true });
+    window.addEventListener("resize", remeasure);
+    let killScroll = () => {
+      window.removeEventListener("scroll", direct);
+      window.removeEventListener("resize", remeasure);
+    };
     if (pinned !== null) flight.set(pinned);
 
     /* ── scene ── */
     let cancelled = false;
+    let gsap: Gsap | null = null;
+    const gsapReady = loadGsap().then(({ gsap: g, ScrollTrigger: ST }) => {
+      if (cancelled) return g;
+      gsap = g;
+      // hand the scroll over to ScrollTrigger + quickTo smoothing
+      killScroll();
+      const quick = g.quickTo(proxy, "s", { duration: reduce ? 0 : 0.7, ease: "power3.out", onUpdate: apply });
+      to = (s) => quick(s);
+      const st = ST.create({
+        start: 0,
+        end: "max",
+        onUpdate: (self) => to(mapScroll(anchors, self.scroll())),
+        onRefresh: () => { anchors = measureAnchors(); to(mapScroll(anchors, window.scrollY)); },
+      });
+      killScroll = () => st.kill();
+      return g;
+    });
     let disposeScene = () => {};
     let resolveReady: (s: OrbitScene | null) => void = () => {};
     const ready = new Promise<OrbitScene | null>((r) => { resolveReady = r; });
@@ -164,7 +195,9 @@ export default function OrbitMount() {
       if (!scene || cancelled) return;
       const p = { t: 0 };
       scene.setPlot(0);
-      gsap.to(p, { t: 1, duration: 1.4, ease: "power1.inOut", onUpdate: () => scene.setPlot(p.t) });
+      gsapReady.then((g) => {
+        if (!cancelled) g.to(p, { t: 1, duration: 1.4, ease: "power1.inOut", onUpdate: () => scene.setPlot(p.t) });
+      });
     };
 
     /* ── launch ── */
@@ -177,7 +210,7 @@ export default function OrbitMount() {
       const label = document.getElementById("launch-label");
       const pad = document.getElementById("launch-pad");
       const remaining = LAUNCH_CAP_MS - performance.now();
-      let tl: gsap.core.Timeline | null = null;
+      let tl: ReturnType<Gsap["timeline"]> | null = null;
       let done = false;
 
       const finish = () => {
@@ -186,7 +219,7 @@ export default function OrbitMount() {
         tl?.kill();
         if (!reduce && webglAvailable()) startScene();   // fades in under the overlay's fade-out
         // a hidden tab gets no animation frames, so a tweened fade would never finish
-        if (root && !document.hidden) gsap.to(root, { opacity: 0, duration: 0.45, ease: "power1.out", onComplete: endLaunch });
+        if (root && !document.hidden && gsap) gsap.to(root, { opacity: 0, duration: 0.45, ease: "power1.out", onComplete: endLaunch });
         else endLaunch();
         ready.then(plotIn);
       };
@@ -208,11 +241,12 @@ export default function OrbitMount() {
         // first paint), then climb — no waiting on three.js: the target is
         // computed by hand from the same transform the scene uses.
         const wait = Math.max(0, Math.min(700 - performance.now(), remaining - (ASCENT_S + FADE_S) * 1000 - 200));
-        setTimeout(() => {
+        setTimeout(async () => {
+          const g = await gsapReady;
           if (cancelled || done) return;
           // build the timeline now, not earlier: tweens added to a timeline that has
           // been playing while we waited land "in the past" and skip ahead
-          tl = gsap.timeline();
+          tl = g.timeline();
           const left = LAUNCH_CAP_MS - performance.now() - FADE_S * 1000 - 100;
           const ascent = Math.max(0.5, Math.min(ASCENT_S, left / 1000));
           const mobile = window.matchMedia("(max-width: 767px)").matches;
@@ -281,7 +315,7 @@ export default function OrbitMount() {
 
     return () => {
       cancelled = true;
-      st.kill();
+      killScroll();
       killers.forEach((k) => k());
       disposeScene();
     };

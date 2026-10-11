@@ -106,7 +106,7 @@ export default function FlightTracker() {
         })}
         <circle ref={head} r="3" fill="#A5F3FC" style={{ filter: "drop-shadow(0 0 4px rgba(103,232,249,0.8))" }} />
       </svg>
-      <div className="font-space-mono text-[9px] tracking-[0.25em] uppercase text-gray-500 text-center leading-relaxed">
+      <div className="font-space-mono text-[9px] tracking-[0.25em] uppercase text-gray-400 text-center leading-relaxed">
         <span ref={phase} className="block text-teal-400/80">Approach</span>
         <span ref={vel}>v 0.65</span>
       </div>

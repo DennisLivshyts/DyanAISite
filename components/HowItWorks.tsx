@@ -69,7 +69,7 @@ export default function HowItWorks() {
 
                 {/* Content */}
                 <div className="pt-3 pb-2">
-                  <div className="font-space-mono text-[10px] tracking-[0.3em] uppercase text-teal-500/70 mb-2">{step.phase}</div>
+                  <div className="font-space-mono text-[10px] tracking-[0.3em] uppercase text-teal-500 mb-2">{step.phase}</div>
                   <h3 className="font-syne text-xl md:text-2xl font-bold text-white mb-4 leading-tight">
                     {step.title}
                   </h3>

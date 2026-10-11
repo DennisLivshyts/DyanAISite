@@ -3,11 +3,11 @@
 import { useState } from "react";
 import BookingModal from "./BookingModal";
 
-function FloatLabel({ label, children }: { label: string; children: React.ReactNode }) {
+function FloatLabel({ label, htmlFor, children }: { label: string; htmlFor: string; children: React.ReactNode }) {
   return (
     <div className="relative">
       {children}
-      <label className="absolute left-4 top-4 text-gray-500 text-sm transition-all duration-200 pointer-events-none peer-focus:top-2 peer-focus:text-[11px] peer-focus:text-teal-400 peer-[&:not(:placeholder-shown)]:top-2 peer-[&:not(:placeholder-shown)]:text-[11px] peer-[&:not(:placeholder-shown)]:text-gray-400">
+      <label htmlFor={htmlFor} className="absolute left-4 top-4 text-gray-400 text-sm transition-all duration-200 pointer-events-none peer-focus:top-2 peer-focus:text-[11px] peer-focus:text-teal-400 peer-[&:not(:placeholder-shown)]:top-2 peer-[&:not(:placeholder-shown)]:text-[11px] peer-[&:not(:placeholder-shown)]:text-gray-400">
         {label}
       </label>
     </div>
@@ -120,7 +120,7 @@ export default function Contact() {
                     <span className="inline-block ml-1 group-hover:translate-x-1 transition-transform duration-200">→</span>
                   </span>
                   <div className="flex items-center gap-1.5">
-                    <span className="text-gray-500 text-xs mr-1">Available</span>
+                    <span className="text-gray-400 text-xs mr-1">Available</span>
                     {[...Array(5)].map((_, i) => (
                       <div
                         key={i}
@@ -144,7 +144,7 @@ export default function Contact() {
                   className="bg-navy-900 border border-navy-700 hover:border-teal-500/20 rounded-xl p-4 text-center transition-colors duration-200"
                 >
                   <p className="font-space-mono text-teal-400 font-bold text-lg">{value}</p>
-                  <p className="text-gray-500 text-xs mt-1">{label}</p>
+                  <p className="text-gray-400 text-xs mt-1">{label}</p>
                 </div>
               ))}
             </div>
@@ -172,12 +172,13 @@ export default function Contact() {
                 className="absolute -left-[9999px] w-px h-px opacity-0" />
               <div className="mb-2">
                 <p className="text-white font-semibold text-lg">Send a message</p>
-                <p className="text-gray-500 text-sm mt-1">We'll reply within one business day.</p>
+                <p className="text-gray-400 text-sm mt-1">We'll reply within one business day.</p>
               </div>
 
               <div className="grid sm:grid-cols-2 gap-4">
-                <FloatLabel label="Your Name *">
+                <FloatLabel label="Your Name *" htmlFor="contact-name">
                   <input
+                    id="contact-name"
                     name="name"
                     value={form.name}
                     onChange={handleChange}
@@ -186,8 +187,9 @@ export default function Contact() {
                     className="peer w-full bg-navy-800 border border-navy-700 hover:border-navy-600 focus:border-teal-500/50 rounded-xl px-4 pt-6 pb-3 text-white outline-none transition-colors text-sm"
                   />
                 </FloatLabel>
-                <FloatLabel label="Email *">
+                <FloatLabel label="Email *" htmlFor="contact-email">
                   <input
+                    id="contact-email"
                     name="email"
                     type="email"
                     value={form.email}
@@ -199,8 +201,9 @@ export default function Contact() {
                 </FloatLabel>
               </div>
 
-              <FloatLabel label="Business Name">
+              <FloatLabel label="Business Name" htmlFor="contact-business">
                 <input
+                  id="contact-business"
                   name="business"
                   value={form.business}
                   onChange={handleChange}
@@ -209,8 +212,9 @@ export default function Contact() {
                 />
               </FloatLabel>
 
-              <FloatLabel label="Message *">
+              <FloatLabel label="Message *" htmlFor="contact-message">
                 <textarea
+                  id="contact-message"
                   name="message"
                   value={form.message}
                   onChange={handleChange}

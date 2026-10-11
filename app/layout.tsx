@@ -1,7 +1,12 @@
 import type { Metadata } from "next";
+import { DM_Sans, Space_Mono } from "next/font/google";
 import "./globals.css";
 import MouseSpotlight from "@/components/MouseSpotlight";
 import SpaceBackground from "@/components/SpaceBackground";
+
+// Self-hosted at build time (no request to Google at runtime, nothing render-blocking).
+const dmSans = DM_Sans({ subsets: ["latin"], weight: ["300", "400", "500", "600", "700"], display: "swap", variable: "--font-dm-sans" });
+const spaceMono = Space_Mono({ subsets: ["latin"], weight: ["400", "700"], display: "swap", variable: "--font-space-mono" });
 
 export const metadata: Metadata = {
   title: "DyanAI Labs — Business Integrations for a Modern Era",
@@ -24,7 +29,7 @@ export default function RootLayout({
 }) {
   return (
     // suppressHydrationWarning: the head script may add `launching` before React hydrates
-    <html lang="en" suppressHydrationWarning>
+    <html lang="en" suppressHydrationWarning className={`${dmSans.variable} ${spaceMono.variable}`}>
       <head>
         {/* Decide before first paint whether this visit gets the launch screen:
             first visit this session, motion allowed, landing on the home page

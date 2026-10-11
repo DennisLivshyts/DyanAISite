@@ -17,7 +17,7 @@ export default function Work() {
             Things we&apos;ve shipped
           </h2>
         </div>
-        <p className="font-space-mono text-[10px] tracking-[0.25em] uppercase text-gray-600">
+        <p className="font-space-mono text-[10px] tracking-[0.25em] uppercase text-gray-400">
           Drag, swipe or use the arrows · click a card to open it
         </p>
       </div>
